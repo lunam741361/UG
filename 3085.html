@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>所有会员导出原型</title>
+<style>
+:root{
+  --primary:#1f6dff;--t1:#303133;--t2:#606266;--t3:#909399;--t4:#c0c4cc;
+  --bd:#dcdfe6;--bd2:#ebeef5;--bg:#f5f7fa;--ok:#67c23a;--okbg:#f0f9eb;
+  --err:#f56c6c;--errbg:#fef0f0;--warn:#e6a23c;--warnbg:#fdf6ec;--warnbd:#f5dab1;--edit:#ecf5ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);font:12px/1.5 -apple-system,"PingFang SC","Microsoft YaHei",Arial,sans-serif}
+button{font:inherit;cursor:pointer}
+/* proto note */
+.proto-head{background:#1f2937;color:#fff;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.proto-head b{font-size:14px}.proto-head span{color:#cbd5e1}
+.proto-head .tag{background:#67c23a;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px}
+/* topbar */
+.topbar{height:48px;background:var(--primary);color:#fff;display:flex;align-items:center;padding:0 16px;gap:16px}
+.topbar .site{font-weight:700;font-size:14px}.topbar .sp{flex:1}
+.menu{height:48px;background:#fff;display:flex;align-items:stretch;padding:0 8px;border-bottom:1px solid var(--bd2);overflow-x:auto}
+.menu a{display:flex;align-items:center;padding:0 16px;color:var(--t2);font-size:13px;text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+.menu a.on{color:var(--primary);border-bottom-color:var(--primary)}
+.tabs{display:flex;align-items:center;gap:6px;padding:6px 16px;background:#fff;border-bottom:1px solid var(--bd2)}
+.tabs .tb{border:1px solid var(--bd);padding:3px 10px;border-radius:3px;color:var(--t2)}
+.tabs .tb.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tabs .sp{flex:1}.tabs .r{color:var(--t2)}
+.alertbar{margin:12px 16px 0;background:var(--warnbg);border:1px solid var(--warnbd);color:#b88230;padding:8px 12px;border-radius:4px;display:flex;justify-content:space-between}
+.main{margin:12px 16px 24px;background:#fff;border-radius:4px;padding:16px}
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.sel,.ipt{height:32px;border:1px solid var(--bd);border-radius:4px;padding:0 10px;display:inline-flex;align-items:center;justify-content:space-between;width:180px;color:var(--t2);background:#fff}
+.sel::after{content:"▾";color:var(--t4)}
+.ipt{color:var(--t4)}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:4px;overflow:hidden}
+.seg span{padding:0 12px;line-height:30px;color:var(--t2);border-left:1px solid var(--bd)}.seg span:first-child{border-left:0}
+.seg .on{background:var(--primary);color:#fff}
+.btn{height:32px;padding:0 15px;border-radius:4px;border:1px solid var(--bd);background:#fff;color:var(--t2)}
+.btn.pri{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.plain{border-color:var(--primary);color:var(--primary)}
+.btn.link{border:0;color:var(--primary);background:none;padding:0 6px}
+.toolbar{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+.toolbar .sp{flex:1}
+/* table */
+.tablewrap{overflow-x:auto;border:1px solid var(--bd2)}
+table{border-collapse:collapse;width:100%}
+th{background:var(--bg);color:var(--t3);font-weight:600;text-align:left}
+th,td{padding:8px 10px;border-bottom:1px solid var(--bd2);white-space:nowrap;vertical-align:top}
+td .sub{display:block;color:var(--t3);font-size:11px}
+.vip{background:var(--ok);color:#fff;border-radius:3px;padding:0 4px;font-size:10px;margin-left:4px}
+.st-ok{color:var(--ok)}
+.col-hl{background:#f0f9eb!important;position:relative}
+th.col-hl{color:#3d8b1f}
+.op a{color:var(--primary);margin-right:8px;text-decoration:none}.op a.d{color:var(--err)}
+.cb{width:14px;height:14px;border:1px solid var(--bd);border-radius:2px;display:inline-block;vertical-align:middle;background:#fff}
+.footer{display:flex;align-items:center;gap:14px;padding:12px 0 0;flex-wrap:wrap;color:var(--t2)}
+.footer .sp{flex:1}
+.pager span{display:inline-block;min-width:26px;text-align:center;padding:2px 4px}.pager .on{color:var(--primary);font-weight:700}
+/* annotation */
+.anno{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#e5484d;color:#fff;font-size:11px;font-weight:700;margin-left:4px;vertical-align:middle}
+/* dialog */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;padding-top:8vh;z-index:10}
+.mask.show{display:flex}
+.dlg{background:#fff;border-radius:4px;width:640px;max-width:calc(100% - 32px);box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;font-size:16px;color:var(--t1)}
+.dlg-h .x{color:var(--t3);cursor:pointer;font-size:18px}
+.dlg-b{padding:4px 20px 12px}
+.dlg-f{padding:10px 20px 18px;display:flex;justify-content:flex-end;gap:10px}
+.fl{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:var(--t2);font-size:13px}
+.req{color:var(--err)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px}
+.ck{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:4px;border:1px solid transparent;cursor:pointer;user-select:none;color:var(--t2)}
+.ck .box{width:14px;height:14px;border:1px solid var(--bd);border-radius:2px;display:inline-flex;align-items:center;justify-content:center;background:#fff;flex:none}
+.ck.on .box,.ck.half .box{background:var(--primary);border-color:var(--primary)}
+.ck.on .box::after{content:"";width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.ck.half .box::after{content:"";width:8px;height:2px;background:#fff}
+.ck.new{background:var(--okbg);border-color:var(--ok);color:var(--t1);font-weight:600}
+.badge{background:var(--ok);color:#fff;border-radius:8px;padding:0 6px;font-size:10px;font-weight:400}
+.tip{margin-top:12px;background:var(--warnbg);border:1px solid var(--warnbd);color:#8a6100;border-radius:4px;padding:8px 10px;line-height:1.7}
+.err{color:var(--err);margin-top:8px;display:none}
+/* toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--okbg);border:1px solid #e1f3d8;color:var(--ok);padding:10px 18px;border-radius:4px;display:none;z-index:20;box-shadow:0 2px 12px rgba(0,0,0,.1)}
+/* preview */
+.preview{margin:0 16px 16px;background:#fff;border-radius:4px;padding:16px;display:none}
+.preview h3{margin:0 0 4px;font-size:14px}
+.preview .desc{color:var(--t3);margin-bottom:10px}
+.preview th.new{background:#e1f3d8;color:#3d8b1f}
+/* notes */
+.notes{margin:0 16px 32px;background:#fff;border-radius:4px;padding:16px;border-left:4px solid #2f6fed}
+.notes h3{margin:0 0 8px;font-size:14px}
+.notes ol{margin:0;padding-left:20px;line-height:1.9;color:var(--t2)}
+.notes .pill{background:#fff7dd;color:#8a6100;border-radius:10px;padding:0 6px;font-size:11px}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.sel,.ipt{width:140px}}
+</style>
+</head>
+<body>
+
+<div class="proto-head"><b>原型 · 所有会员-导出报表新增「上级代理」「顶层代理」</b><span>V1.0 · 2026-10-10 · 本期仅改导出，列表不变</span><span class="tag">可点击</span></div>
+
+<div class="topbar"><span class="site">LG娱乐城(1170)</span><span>(UTC +8) 2026-10-10</span><span class="sp"></span><span>asean ▾</span></div>
+<nav class="menu"><a>仪表盘</a><a>运营</a><a>游戏</a><a class="on">会员</a><a>代理</a><a>优惠</a><a>财务</a><a>报表</a><a>风控</a><a>系统</a></nav>
+<div class="tabs"><span class="tb on">所有会员 ×</span><span class="tb">待删除会员 ×</span><span class="sp"></span><span class="r">↺ 刷新　批量关闭 ▾　⛶</span></div>
+<div class="alertbar"><span>当前属于新站配置保护期间，若正式运营请联系商务或技术支持修改状态，避免会员进入游戏额度受限制</span><span>×</span></div>
+
+<div class="main">
+  <div class="filters">
+    <span class="sel">全部币种</span>
+    <span class="sel">注册时间</span>
+    <span class="seg"><span class="on">日</span><span>周</span><span>月</span></span>
+    <span class="ipt" style="width:240px">2026-10-10 ~ 2026-10-10</span>
+    <span class="sel">精准会员账号</span>
+    <span class="ipt">请输入</span>
+    <span class="sel">搜索条件</span>
+    <span class="sel">账号类型</span>
+    <button class="btn pri">搜索</button><button class="btn">高级搜索</button><button class="btn">重置</button>
+  </div>
+  <div class="toolbar">
+    <span class="sp"></span>
+    <button class="btn pri">+ 新增会员</button>
+    <button class="btn">⬆ 导入 ▾</button>
+    <button class="btn plain" id="openExport">⬆ 导出报表</button><span class="anno" title="本次改动入口">1</span>
+    <button class="btn link">📖 操作教程</button>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th><span class="cb"></span></th><th>会员ID</th><th>会员账号(会员层级)</th><th>账号状态</th><th>账号类型(会员级别)</th><th>姓名</th><th>邀请人(ID)</th>
+        <th class="col-hl">顶层代理(ID)</th><th class="col-hl">上级代理(ID)</th>
+        <th>币种</th><th>总余额(含利息宝)/奖励钱包</th><th>总充值金额(充值次数) ⇅</th><th>总提现金额(提现次数) ⇅</th><th>总充提差额(首充金额)</th><th>注册方式(验证方式)</th><th>注册时间(注册来源) ⇅</th><th>登录方式</th><th>最后登录IP/地区/时间</th><th>操作</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="footer">
+    <span><span class="cb"></span> 全选当前页</span><span><span class="cb"></span> 全选所有结果</span>
+    <span class="sel" style="width:140px">批量操作</span><span>已选择 0 条数据</span>
+    <span class="sp"></span>
+    <span class="pager">‹ <span class="on">1</span><span>2</span><span>3</span> › 前往 1 页　共 4 条　20条/页 ▾</span>
+  </div>
+</div>
+
+<div class="preview" id="preview">
+  <h3>导出文件预览（下载中心 · 会员列表_20261010.xlsx）</h3>
+  <div class="desc">仅展示与本次改动相关的列。绿色表头为新增列；取消勾选某一字段后再导出，对应的 2 列不出现。</div>
+  <div class="tablewrap"><table id="pv"></table></div>
+</div>
+
+<div class="notes">
+  <h3>原型说明</h3>
+  <ol>
+    <li><span class="anno">1</span> 点击「⬆ 导出报表」打开字段勾选框；列表中绿色底的「顶层代理(ID)」「上级代理(ID)」为已有列，本期不改。</li>
+    <li>勾选框新增「顶层代理」「上级代理」两项，默认勾选，位于「邀请人」之后，顺序与列表一致 <span class="pill">待确认 Q1/Q2</span></li>
+    <li>每项导出「账号」「ID」两列：顶层代理 → 顶层代理ID → 上级代理 → 上级代理ID <span class="pill">待确认 Q3</span></li>
+    <li>取值与列表同源：上级代理为会员当前代理归属，≠ 邀请人；无值输出 --；代理已删除或停用时原样输出 del_xxx。</li>
+    <li>全选支持半选状态；全部取消时点「确认」提示「请至少勾选 1 个导出字段」。</li>
+    <li>确认后提示「导出任务已提交，请到「下载中心」查看」，异步生成文件。</li>
+  </ol>
+</div>
+
+<div class="mask" id="mask">
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <div class="dlg-h"><span id="dlgTitle">导出报表</span><span class="x" id="close">×</span></div>
+    <div class="dlg-b">
+      <div class="fl"><span><span class="req">*</span> 导出字段</span><span class="ck on" id="all"><span class="box"></span>全选</span></div>
+      <div class="grid" id="grid"></div>
+      <div class="err" id="err">请至少勾选 1 个导出字段</div>
+      <div class="tip">· 绿色两项为本次新增，默认勾选；每项导出「账号」「ID」两列<br>· 除新增两项外，现有字段清单与顺序以测试环境实测为准（待确认 Q1）</div>
+    </div>
+    <div class="dlg-f"><button class="btn" id="cancel">取消</button><button class="btn pri" id="ok">确认</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">导出任务已提交，请到「下载中心」查看</div>
+
+<script>
+const data=[
+  {id:"100501",acc:"user001",lv:"默认层级A",vip:"VIP2",type:"正式账号-普通会员",name:"张三",inv:"agent888",invId:"100235",top:"topagent01",topId:"100001",up:"agent888",upId:"100235"},
+  {id:"100502",acc:"user002",lv:"默认层级A",vip:"VIP0",type:"正式账号-普通会员",name:"李四",inv:"topagent01",invId:"100001",top:"topagent01",topId:"100001",up:"topagent01",upId:"100001"},
+  {id:"100503",acc:"user003",lv:"层级B",vip:"VIP1",type:"正式账号-人人代理",name:"王五",inv:"--",invId:"",top:"--",topId:"",up:"--",upId:""},
+  {id:"100504",acc:"user004",lv:"默认层级A",vip:"VIP0",type:"正式账号-普通会员",name:"赵六",inv:"agent520",invId:"100288",top:"topagent02",topId:"100002",up:"del_ag77",upId:"100310"}
+];
+const dual=(a,b)=>a+(b?`<span class="sub">(${b})</span>`:"");
+document.getElementById("rows").innerHTML=data.map(d=>`<tr>
+<td><span class="cb"></span></td><td>${d.id}</td><td>${d.acc}<span class="vip">${d.vip}</span><span class="sub">(${d.lv})</span></td>
+<td class="st-ok">正常</td><td>${d.type}</td><td>${d.name}</td><td>${dual(d.inv,d.invId)}</td>
+<td class="col-hl">${dual(d.top,d.topId)}</td><td class="col-hl">${dual(d.up,d.upId)}</td>
+<td>CNY</td><td>1,413.15<span class="sub">0.00</span></td><td>2,000.00<span class="sub">(3)</span></td><td>500.00<span class="sub">(1)</span></td><td>1,500.00<span class="sub">(100.00)</span></td>
+<td>账号<span class="sub">(无验证)</span></td><td>2026-10-01 12:30:45<span class="sub">(官网)</span></td><td>账号登录</td><td>203.0.113.8 / TW-Taipei<span class="sub">2026-10-10 09:12:03</span></td>
+<td class="op"><a href="#">详情</a><a href="#" class="d">删除</a></td></tr>`).join("");
+
+const fields=["会员ID","会员账号","会员层级","VIP等级","账号状态","账号类型","姓名","邀请人","顶层代理","上级代理","币种","总余额","总充值金额","总提现金额","注册方式","注册时间","注册来源","最后登录IP"];
+const NEW=new Set(["顶层代理","上级代理"]);
+let sel=new Set(fields);
+const grid=document.getElementById("grid"),all=document.getElementById("all"),err=document.getElementById("err");
+function render(){
+  grid.innerHTML=fields.map(f=>`<span class="ck ${sel.has(f)?"on":""} ${NEW.has(f)?"new":""}" data-f="${f}"><span class="box"></span>${f}${NEW.has(f)?' <span class="badge">新增</span>':""}</span>`).join("");
+  all.className="ck "+(sel.size===fields.length?"on":sel.size?"half":"");
+}
+grid.onclick=e=>{const c=e.target.closest(".ck");if(!c)return;const f=c.dataset.f;sel.has(f)?sel.delete(f):sel.add(f);err.style.display="none";render();};
+all.onclick=()=>{sel=sel.size===fields.length?new Set():new Set(fields);err.style.display="none";render();};
+const mask=document.getElementById("mask");
+const open=()=>{sel=new Set(fields);err.style.display="none";render();mask.classList.add("show");};
+const close=()=>mask.classList.remove("show");
+document.getElementById("openExport").onclick=open;
+document.getElementById("close").onclick=close;
+document.getElementById("cancel").onclick=close;
+mask.onclick=e=>{if(e.target===mask)close();};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+document.getElementById("ok").onclick=()=>{
+  if(!sel.size){err.style.display="block";return;}
+  close();
+  const t=document.getElementById("toast");t.style.display="block";setTimeout(()=>t.style.display="none",2600);
+  buildPreview();
+};
+function buildPreview(){
+  const cols=[];
+  if(sel.has("会员账号"))cols.push(["会员账号",d=>d.acc,false]);
+  if(sel.has("邀请人"))cols.push(["邀请人",d=>d.inv,false]);
+  if(sel.has("顶层代理")){cols.push(["顶层代理",d=>d.top,true]);cols.push(["顶层代理ID",d=>d.topId||"--",true]);}
+  if(sel.has("上级代理")){cols.push(["上级代理",d=>d.up,true]);cols.push(["上级代理ID",d=>d.upId||"--",true]);}
+  const pv=document.getElementById("pv");
+  if(!cols.length){pv.innerHTML="<tr><td>（所选字段中不含相关列）</td></tr>";}
+  else pv.innerHTML="<thead><tr>"+cols.map(c=>`<th class="${c[2]?"new":""}">${c[0]}</th>`).join("")+"</tr></thead><tbody>"+
+    data.map(d=>"<tr>"+cols.map(c=>`<td>${c[1](d)}</td>`).join("")+"</tr>").join("")+"</tbody>";
+  const p=document.getElementById("preview");p.style.display="block";p.scrollIntoView({behavior:"smooth",block:"start"});
+}
+render();
+</script>
+</body>
+</html>
