@@ -1,0 +1,395 @@
+<title>充值次数类型原型</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 布局：左后台新增活动弹窗（Element 风格）｜右 H5 活动详情页（深色）；下方规则矩阵。纯 CSS，radio 与 .stage 同级驱动联动。单一视觉，不随系统深浅色切换。 */
+:root{
+  --page:#eef1f5; --ink:#1f2937; --t1:#303133; --t2:#606266; --t3:#909399; --t4:#c0c4cc;
+  --line:#dcdfe6; --line2:#ebeef5; --pri:#409eff; --pri-bg:#ecf5ff; --danger:#f56c6c; --warn:#e6a23c;
+  --h5-bg:#1b1d22; --h5-card:#24262c; --h5-item:#2c2f36; --h5-t:#e8e8ea; --h5-t2:#9a9ca3; --gold:#fbbf24; --green:#13700f; --green-t:#8fbf8b;
+  --font:"PingFang SC","Microsoft YaHei","Noto Sans SC","Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--t1);font-family:var(--font);font-size:14px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:18px;color:var(--ink);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--t2);margin:0 0 16px;font-size:13px}
+.lead b{color:var(--pri);font-weight:600}
+.sr{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.stage{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+
+/* ---------- 后台弹窗 ---------- */
+.dlg{flex:1 1 560px;min-width:0;background:#fff;border:1px solid #e4e7ed;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line2)}
+.dlg-h b{font-size:16px;color:var(--t1)}
+.dlg-h span{color:var(--t3);font-size:18px}
+.dlg-b{padding:16px 20px 6px;display:grid;gap:14px}
+.row{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:start}
+.row>.k{text-align:right;color:var(--t2);padding-top:5px;font-size:13px}
+.row>.k i{color:var(--danger);font-style:normal;margin-right:2px}
+.v{min-width:0}
+.inp{border:1px solid var(--line);border-radius:4px;padding:5px 11px;color:var(--t1);background:#fff;display:inline-block;min-width:220px;max-width:100%}
+.inp.ro{background:#f5f7fa;color:var(--t3)}
+.sel::after{content:"⌄";float:right;color:var(--t4);margin-left:12px}
+.omit{color:var(--t4);font-size:12px;border:1px dashed #e4e7ed;border-radius:4px;padding:6px 10px;text-align:center}
+.radios{display:flex;flex-wrap:wrap;gap:6px 22px;padding-top:4px}
+.rd{display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--t2);user-select:none}
+.rd .dot{width:14px;height:14px;border:1px solid var(--line);border-radius:50%;background:#fff;flex:none;position:relative}
+.rd:hover .dot{border-color:var(--pri)}
+.rd em{font-style:normal;color:var(--t3)}
+.hint{font-size:12px;color:var(--t3);margin-top:6px}
+.new{position:relative;border:1.5px dashed var(--pri);border-radius:6px;padding:12px 10px 10px;background:linear-gradient(var(--pri-bg),var(--pri-bg)) padding-box}
+.tag{position:absolute;top:-10px;left:10px;background:var(--pri);color:#fff;font-size:11px;padding:0 8px;border-radius:9px;line-height:18px}
+.tag.chg{background:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding-top:3px}
+.chip{border:1px solid var(--line);border-radius:4px;padding:2px 10px;font-size:12px;color:var(--t2);background:#fff}
+.chip.on{border-color:var(--pri);color:var(--pri);background:var(--pri-bg)}
+.tbl-w{overflow-x:auto;border:1px solid var(--line2);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line2);padding:7px 10px;text-align:left;white-space:nowrap}
+th{background:#f5f7fa;color:var(--t2);font-weight:500}
+td .inp{min-width:0;width:84px;padding:2px 8px}
+.lnk{color:var(--pri)}
+.lnk.d{color:var(--danger)}
+.dlg-f{display:flex;justify-content:flex-end;gap:10px;padding:12px 20px 16px;border-top:1px solid var(--line2);margin-top:8px}
+.btn{border:1px solid var(--line);border-radius:4px;padding:6px 18px;background:#fff;color:var(--t2);font:inherit}
+.btn.p{background:var(--pri);border-color:var(--pri);color:#fff}
+
+/* ---------- H5 ---------- */
+.phone-col{flex:0 1 380px;min-width:0;max-width:100%}
+.cap{font-size:12px;color:var(--t3);margin:0 0 8px}
+.phone{background:var(--h5-bg);color:var(--h5-t);border-radius:22px;border:6px solid #0e0f12;overflow:hidden;position:relative;max-width:100%}
+.ph-top{display:grid;grid-template-columns:40px 1fr auto;align-items:center;padding:12px 12px;font-weight:600}
+.ph-top .back{font-size:20px;color:#ddd}
+.ph-top .tt{text-align:center;font-size:15px}
+.ph-top .rec{color:var(--gold);font-size:12px;font-weight:400}
+.card{background:var(--h5-card);margin:4px 10px;border-radius:8px;padding:12px 10px}
+.card-h{display:flex;justify-content:space-between;align-items:center}
+.card-h b{font-size:15px}
+.card-h span{color:var(--gold);font-size:12px}
+.subwrap{position:relative;margin:14px 0 10px;border:1.5px dashed var(--pri);border-radius:5px;padding:9px 7px 5px}
+.subwrap .tag{top:-9px;left:auto;right:6px}
+.sub{font-size:12px;color:var(--h5-t2);display:none}
+.sub b{color:var(--gold);font-weight:500}
+.task{background:var(--h5-item);border-radius:6px;padding:9px 8px;display:grid;grid-template-columns:34px 1fr 76px;gap:8px;align-items:center;margin-top:8px}
+.ico{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#5aa9ff 0 45%,#1c6fd1 46% 100%);position:relative}
+.ico::after{content:"+";position:absolute;right:-4px;bottom:-4px;width:14px;height:14px;border-radius:50%;background:#2fb344;color:#fff;font-size:12px;line-height:13px;text-align:center;font-weight:700}
+.task .ttl{font-size:13px}
+.task .ttl em{font-style:normal;color:var(--gold)}
+.bar{height:9px;background:#5b5e66;border-radius:5px;margin:5px 0 3px;text-align:center;font-size:8px;line-height:9px;color:#ddd}
+.st{font-size:11px;color:var(--h5-t2)}
+.st .pf{display:none}
+.task .go{background:var(--green);color:var(--green-t);border-radius:4px;text-align:center;font-size:12px;padding:6px 0}
+.rules{background:var(--h5-card);margin:10px 10px 12px;border-radius:8px;padding:12px 10px;font-size:12px;color:#d6d6d8;line-height:1.7}
+.rules .badge{display:inline-block;background:var(--gold);color:#5a3b00;padding:1px 12px;border-radius:2px;font-size:14px;margin-bottom:6px}
+.rules ol{margin:0;padding-left:18px}
+.rules .r1{display:none}
+.rules mark{background:none;color:#fff;outline:1.5px dashed var(--pri);outline-offset:1px;border-radius:2px}
+.mask{display:none;position:absolute;inset:0;background:rgba(15,16,20,.86);color:#fff;align-items:center;justify-content:center;text-align:center;padding:30px;font-size:13px;line-height:1.7}
+
+/* ---------- 规则矩阵 ---------- */
+.matrix{margin-top:24px;background:#fff;border:1px solid #e4e7ed;border-radius:8px;padding:14px 16px}
+.matrix h2{font-size:15px;margin:0 0 10px;color:var(--ink)}
+.matrix td,.matrix th{white-space:normal;vertical-align:top;min-width:96px}
+.matrix tr.cur td{background:var(--pri-bg)}
+.notes{margin:14px 0 0;padding-left:18px;color:var(--t2);font-size:13px;display:grid;gap:4px}
+
+/* ---------- 联动：活动条件 ---------- */
+#c0:checked~.stage label[for=c0] .dot,#c1:checked~.stage label[for=c1] .dot,#c2:checked~.stage label[for=c2] .dot,#c3:checked~.stage label[for=c3] .dot,
+#t0:checked~.stage label[for=t0] .dot,#t1:checked~.stage label[for=t1] .dot,#t2:checked~.stage label[for=t2] .dot,#t3:checked~.stage label[for=t3] .dot{border:4px solid var(--pri)}
+#c0:checked~.stage label[for=c0],#c1:checked~.stage label[for=c1],#c2:checked~.stage label[for=c2],#c3:checked~.stage label[for=c3],
+#t0:checked~.stage label[for=t0],#t1:checked~.stage label[for=t1],#t2:checked~.stage label[for=t2],#t3:checked~.stage label[for=t3]{color:var(--pri)}
+#c0:checked~.stage .only-cnt,#c1:checked~.stage .only-cnt,#c2:checked~.stage .only-cnt{display:none}
+#c0:checked~.stage .mask,#c1:checked~.stage .mask,#c2:checked~.stage .mask{display:flex}
+input:focus-visible~.stage label{outline:none}
+#c0:focus-visible~.stage label[for=c0],#c1:focus-visible~.stage label[for=c1],#c2:focus-visible~.stage label[for=c2],#c3:focus-visible~.stage label[for=c3],
+#t0:focus-visible~.stage label[for=t0],#t1:focus-visible~.stage label[for=t1],#t2:focus-visible~.stage label[for=t2],#t3:focus-visible~.stage label[for=t3]{outline:2px solid var(--pri);outline-offset:2px;border-radius:3px}
+
+/* ---------- 联动：充值次数类型 ---------- */
+.x0,.x1,.x2,.x3{display:none}
+#t0:checked~.stage .x0,#t1:checked~.stage .x1,#t2:checked~.stage .x2,#t3:checked~.stage .x3{display:inline}
+#t0:checked~.stage .chip.y0,#t1:checked~.stage .chip.y1,#t2:checked~.stage .chip.y2,#t3:checked~.stage .chip.y3{border-color:var(--pri);color:var(--pri);background:var(--pri-bg)}
+.chip.y0,.chip.y1,.chip.y2,.chip.y3{display:none}
+#t0:checked~.stage .chip.y0,#t1:checked~.stage .chip.y1,#t2:checked~.stage .chip.y2,#t3:checked~.stage .chip.y3{display:inline-block}
+#t0:checked~.stage .sub.s0,#t1:checked~.stage .sub.s1,#t2:checked~.stage .sub.s2,#t3:checked~.stage .sub.s3{display:block}
+#t0:checked~.stage .pf.p0,#t1:checked~.stage .pf.p1,#t2:checked~.stage .pf.p2,#t3:checked~.stage .pf.p3{display:inline}
+#t0:checked~.stage .r1.q0,#t1:checked~.stage .r1.q1,#t2:checked~.stage .r1.q2,#t3:checked~.stage .r1.q3{display:list-item}
+#t0:checked~.matrix tr.m0 td,#t1:checked~.matrix tr.m1 td,#t2:checked~.matrix tr.m2 td,#t3:checked~.matrix tr.m3 td{background:var(--pri-bg);color:var(--t1)}
+/* ---------- 联动：领取时间 ---------- */
+#rn:checked~.stage label[for=rn] .dot,#rr:checked~.stage label[for=rr] .dot,#rd:checked~.stage label[for=rd] .dot,#rnw:checked~.stage label[for=rnw] .dot,#rw:checked~.stage label[for=rw] .dot,#rnm:checked~.stage label[for=rnm] .dot,#rm:checked~.stage label[for=rm] .dot{border:4px solid var(--pri)}
+#rn:checked~.stage label[for=rn],#rr:checked~.stage label[for=rr],#rd:checked~.stage label[for=rd],#rnw:checked~.stage label[for=rnw],#rw:checked~.stage label[for=rw],#rnm:checked~.stage label[for=rnm],#rm:checked~.stage label[for=rm]{color:var(--pri)}
+#rn:focus-visible~.stage label[for=rn],#rr:focus-visible~.stage label[for=rr],#rd:focus-visible~.stage label[for=rd],#rnw:focus-visible~.stage label[for=rnw],#rw:focus-visible~.stage label[for=rw],#rnm:focus-visible~.stage label[for=rnm],#rm:focus-visible~.stage label[for=rm]{outline:2px solid var(--pri);outline-offset:2px;border-radius:3px}
+.o-d,.o-w,.o-m{display:none}
+#t1:checked~.stage .o-d,#t2:checked~.stage .o-d,#t3:checked~.stage .o-d,#t2:checked~.stage .o-w,#t3:checked~.stage .o-m{display:inline-flex}
+.tp{display:none;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:10px;padding-top:10px;border-top:1px dashed #c6e2ff}
+.tp .tk{color:var(--t2);font-size:13px;margin-right:4px}
+.tp .tk i{color:var(--danger);font-style:normal;margin-right:2px}
+.tp .pre,.tp .post{color:var(--t2);font-size:13px}
+.tp .err{color:var(--danger)}
+.inp.tm{min-width:0;width:118px;padding-left:28px;position:relative;font-variant-numeric:tabular-nums}
+.inp.tm::before{content:"";position:absolute;left:9px;top:50%;width:11px;height:11px;margin-top:-6px;border:1.5px solid var(--t4);border-radius:50%}
+.inp.tm::after{content:"";position:absolute;left:14px;top:50%;width:3px;height:4px;margin-top:-4px;border-left:1.5px solid var(--t4);border-bottom:1.5px solid var(--t4)}
+.inp.sm{min-width:0;width:84px}
+.seq{display:inline-flex;align-items:center;gap:6px;color:var(--t2)}
+.inp.num{min-width:0;width:56px;padding:2px 8px;text-align:center}
+#rn:checked~.stage .tp-next,#rr:checked~.stage .tp-rt,
+#t1:checked~#rd:checked~.stage .tp-daily,#t2:checked~#rd:checked~.stage .tp-daily,#t3:checked~#rd:checked~.stage .tp-daily,
+#t2:checked~#rnw:checked~.stage .tp-nw,#t2:checked~#rw:checked~.stage .tp-w,
+#t3:checked~#rnm:checked~.stage .tp-nm,#t3:checked~#rm:checked~.stage .tp-m,
+#t0:checked~#rd:checked~.stage .tp-bad,#t0:checked~#rnw:checked~.stage .tp-bad,#t0:checked~#rw:checked~.stage .tp-bad,#t0:checked~#rnm:checked~.stage .tp-bad,#t0:checked~#rm:checked~.stage .tp-bad,
+#t1:checked~#rnw:checked~.stage .tp-bad,#t1:checked~#rw:checked~.stage .tp-bad,#t1:checked~#rnm:checked~.stage .tp-bad,#t1:checked~#rm:checked~.stage .tp-bad,
+#t2:checked~#rnm:checked~.stage .tp-bad,#t2:checked~#rm:checked~.stage .tp-bad,
+#t3:checked~#rnw:checked~.stage .tp-bad,#t3:checked~#rw:checked~.stage .tp-bad{display:flex}
+/* 前台活动说明第 3 条随领取时间 */
+.rules .r3{display:none}
+#rn:checked~.stage .r3.k-n,#rr:checked~.stage .r3.k-r,#rd:checked~.stage .r3.k-d,#rnw:checked~.stage .r3.k-nw,#rw:checked~.stage .r3.k-w,#rnm:checked~.stage .r3.k-nm,#rm:checked~.stage .r3.k-m{display:list-item}
+#rnm:checked~.matrix2 tr.n-nm td,#rm:checked~.matrix2 tr.n-m td{background:var(--pri-bg)}
+#rn:checked~.matrix2 tr.n-n td,#rr:checked~.matrix2 tr.n-r td,#rd:checked~.matrix2 tr.n-d td,#rnw:checked~.matrix2 tr.n-nw td,#rw:checked~.matrix2 tr.n-w td{background:var(--pri-bg)}
+/* ---------- 联动：规则说明 ---------- */
+.sysbox{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:8px 12px}
+.sys-h{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:12px;border-bottom:1px solid var(--line2);padding-bottom:6px;margin-bottom:6px}
+.sys-h span:first-child{color:var(--pri);font-weight:600}
+.sys-h .lang{color:var(--t3)}
+.sys-h em{font-style:normal;color:var(--t4);margin-left:auto}
+.sysrule{margin:0;padding-left:18px;font-size:12px;color:var(--t2);line-height:1.75}
+.sysrule mark{background:#fdf6ec;color:var(--warn);border-radius:2px;padding:0 2px}
+.sysrule .r1,.sysrule .r3,.r4{display:none}
+#t0:checked~.stage .r4.e0,#t1:checked~.stage .r4.e1,#t2:checked~.stage .r4.e2,#t3:checked~.stage .r4.e3{display:list-item}
+.cusbox,.cus-front{display:none}
+.inp.ta{display:block;min-width:0;width:100%;margin-top:10px;min-height:64px;font-size:12px;line-height:1.7}
+.warn{margin-top:8px;font-size:12px;color:#b88230;background:#fdf6ec;border:1px solid #faecd8;border-radius:4px;padding:6px 10px}
+#rc:checked~.stage .sysbox{display:none}
+#rc:checked~.stage .cusbox{display:block}
+#rc:checked~.stage .rules ol{display:none}
+#rc:checked~.stage .cus-front{display:block;color:#d6d6d8}
+#rs:checked~.stage label[for=rs] .dot,#rc:checked~.stage label[for=rc] .dot{border:4px solid var(--pri)}
+#rs:checked~.stage label[for=rs],#rc:checked~.stage label[for=rc]{color:var(--pri)}
+#rs:focus-visible~.stage label[for=rs],#rc:focus-visible~.stage label[for=rc]{outline:2px solid var(--pri);outline-offset:2px;border-radius:3px}
+/* 活动期间次数 t4 */
+#t4:checked~.stage label[for=t4] .dot{border:4px solid var(--pri)}
+#t4:checked~.stage label[for=t4]{color:var(--pri)}
+#t4:focus-visible~.stage label[for=t4]{outline:2px solid var(--pri);outline-offset:2px;border-radius:3px}
+.x4{display:none}
+#t4:checked~.stage .x4{display:inline}
+#t4:checked~.stage .sub.s4{display:block}
+#t4:checked~.stage .r1.q4{display:list-item}
+#t4:checked~.matrix tr.m4 td{background:var(--pri-bg);color:var(--t1)}
+#t4:checked~#rd:checked~.stage .tp-bad,#t4:checked~#rnw:checked~.stage .tp-bad,#t4:checked~#rw:checked~.stage .tp-bad,#t4:checked~#rnm:checked~.stage .tp-bad,#t4:checked~#rm:checked~.stage .tp-bad{display:flex}
+@media (max-width:560px){.row{grid-template-columns:1fr;gap:4px}.row>.k{text-align:left;padding-top:0}.inp{min-width:0;width:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<h1>活动中心 · 充值活动 · 充值次数类型 — 交互原型</h1>
+<p class="lead">点击左侧<b>「活动条件」</b>和<b>「充值次数类型」</b>，右侧 H5 活动详情页的副标题、进度文案、活动说明会同步切换；点击<b>「领取时间」</b>查看对应的「选择时间」控件；<b>「规则说明」</b>选系统自带时，预览与前台活动说明随配置联动。蓝色虚线框为本期新增，橙色为本期改动。</p>
+
+<input class="sr" type="radio" name="cond" id="c0">
+<input class="sr" type="radio" name="cond" id="c1">
+<input class="sr" type="radio" name="cond" id="c2">
+<input class="sr" type="radio" name="cond" id="c3" checked>
+<input class="sr" type="radio" name="type" id="t0">
+<input class="sr" type="radio" name="type" id="t1">
+<input class="sr" type="radio" name="type" id="t2">
+<input class="sr" type="radio" name="type" id="t3" checked>
+<input class="sr" type="radio" name="type" id="t4">
+<input class="sr" type="radio" name="claim" id="rn">
+<input class="sr" type="radio" name="claim" id="rr">
+<input class="sr" type="radio" name="claim" id="rd">
+<input class="sr" type="radio" name="claim" id="rnw">
+<input class="sr" type="radio" name="claim" id="rw">
+<input class="sr" type="radio" name="claim" id="rnm" checked>
+<input class="sr" type="radio" name="claim" id="rm">
+<input class="sr" type="radio" name="rule" id="rs" checked>
+<input class="sr" type="radio" name="rule" id="rc">
+
+<div class="stage">
+  <!-- 后台 -->
+  <section class="dlg" aria-label="后台新增活动弹窗">
+    <div class="dlg-h"><b>新增活动 · 充值</b><span>×</span></div>
+    <div class="dlg-b">
+      <div class="row"><div class="k"><i>*</i>活动类型</div><div class="v"><span class="inp ro">充值</span></div></div>
+      <div class="row"><div class="k"><i>*</i>活动名称</div><div class="v"><span class="inp">Tavian充值次数</span></div></div>
+      <div class="omit">…币种 / 活动分类 / 活动时间 / 展示时间 / 参与会员 等现有配置，此处省略</div>
+      <div class="row"><div class="k"><i>*</i>活动条件</div><div class="v">
+        <div class="radios">
+          <label class="rd" for="c0"><span class="dot"></span>账号首充</label>
+          <label class="rd" for="c1"><span class="dot"></span>累计充值</label>
+          <label class="rd" for="c2"><span class="dot"></span>单笔充值</label>
+          <label class="rd" for="c3"><span class="dot"></span>充值次数</label>
+        </div></div></div>
+
+      <div class="row only-cnt"><div class="k"><i>*</i>充值次数类型</div><div class="v">
+        <div class="new"><span class="tag">新增</span>
+          <div class="radios">
+            <label class="rd" for="t0"><span class="dot"></span>总次数<em>(注册后第N笔充值)</em></label>
+            <label class="rd" for="t4"><span class="dot"></span>活动期间次数<em>(活动期间第N笔充值)</em></label>
+            <label class="rd" for="t1"><span class="dot"></span>每日次数<em>(当日第N笔充值)</em></label>
+            <label class="rd" for="t2"><span class="dot"></span>每周次数<em>(本周第N笔充值)</em></label>
+            <label class="rd" for="t3"><span class="dot"></span>每月次数<em>(本月第N笔充值)</em></label>
+          </div>
+          <div class="hint">
+            <span class="x0">按会员注册后的累计充值笔序判定，不重置；每个会员活动期间只能领 1 次（取最高档）。</span>
+            <span class="x4">从活动开始时间起计笔序，活动开始前的充值不计，不重置；每个会员活动期间只能领 1 次（取最高档）。本需求上线前创建的活动默认为此类型。</span>
+            <span class="x1">按自然日计数，每日 00:00（UTC+8）重置笔序；每日可领 1 次（取当日最高档）。</span>
+            <span class="x2">按自然周计数，每周一 00:00（UTC+8）重置笔序；每周可领 1 次（取本周最高档）。</span>
+            <span class="x3">按自然月计数，每月 1 日 00:00（UTC+8）重置笔序；每月可领 1 次（取本月最高档）。</span>
+          </div>
+        </div></div></div>
+
+      <div class="row"><div class="k"><i>*</i>充值大类</div><div class="v"><span class="inp sel">全部充值大类</span></div></div>
+      <div class="row"><div class="k"><i>*</i>派发方式</div><div class="v"><span class="inp sel">玩家自领-过期作废</span></div></div>
+
+      <div class="row only-cnt" id="claimrow"><div class="k"><i>*</i>领取时间</div><div class="v">
+        <div class="new"><span class="tag chg">选项随类型变化</span>
+          <div class="radios">
+            <label class="rd" for="rn"><span class="dot"></span>次日领取</label>
+            <label class="rd" for="rr"><span class="dot"></span>实时领取</label>
+            <label class="rd o-d" for="rd"><span class="dot"></span>每日</label>
+            <label class="rd o-w" for="rnw"><span class="dot"></span>下周</label>
+            <label class="rd o-w" for="rw"><span class="dot"></span>每周</label>
+            <label class="rd o-m" for="rnm"><span class="dot"></span>下月</label>
+            <label class="rd o-m" for="rm"><span class="dot"></span>每月</label>
+          </div>
+
+          <div class="tp tp-next"><span class="tk"><i>*</i>选择时间</span><span class="pre">次日</span><span class="inp tm">10:00:00</span><span class="post">以后可领取</span></div>
+          <div class="tp tp-rt"><span class="tk">选择时间</span><span class="post">实时领取无需选择时间，奖励生成后立即可领取</span></div>
+          <div class="tp tp-daily"><span class="tk"><i>*</i>选择时间</span><span class="pre">每日</span><span class="inp tm">10:00:00</span><span class="pre">至</span><span class="inp tm">22:00:00</span><span class="post">可领取</span></div>
+          <div class="tp tp-nw"><span class="tk"><i>*</i>选择时间</span><span class="pre">下周</span><span class="inp sel sm">周一</span><span class="inp tm">10:00:00</span><span class="post">以后可领取</span></div>
+          <div class="tp tp-w"><span class="tk"><i>*</i>选择时间</span><span class="pre">每周</span><span class="inp sel sm">周一</span><span class="inp tm">10:00:00</span><span class="pre">至</span><span class="inp tm">22:00:00</span><span class="post">可领取</span></div>
+          <div class="tp tp-nm"><span class="tk"><i>*</i>选择时间</span><span class="pre">下月</span><span class="inp sel sm">5号</span><span class="inp tm">10:00:00</span><span class="post">以后可领取</span></div>
+          <div class="tp tp-m"><span class="tk"><i>*</i>选择时间</span><span class="pre">每月</span><span class="inp sel sm">5号</span><span class="inp tm">10:00:00</span><span class="pre">至</span><span class="inp tm">22:00:00</span><span class="post">可领取</span></div>
+          <div class="tp tp-bad"><span class="post err">当前领取时间不适用于所选充值次数类型，已清空，请重新选择</span></div>
+
+          <div class="hint">可选项：总次数、活动期间次数=次日/实时；每日次数=次日/实时/每日；每周次数=+下周/每周；每月次数=+下月/每月。日期下拉 1～31 号，当月无该日按月末最后一天。过期天数从首次可领取时间起算。</div>
+        </div></div></div>
+
+      <div class="row"><div class="k"><i>*</i>奖励梯度</div><div class="v">
+        <div class="tbl-w"><table>
+          <thead><tr><th>充值笔数</th><th>单笔充值金额 ≥</th><th>奖励金额</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><span class="seq">第<span class="inp num">1</span>笔</span></td><td><span class="inp">10</span></td><td><span class="inp">10.00</span></td><td><span class="lnk d">删除</span></td></tr>
+            <tr><td><span class="seq">第<span class="inp num">1</span>笔</span></td><td><span class="inp">20</span></td><td><span class="inp">20.00</span></td><td><span class="lnk d">删除</span></td></tr>
+            <tr><td><span class="seq">第<span class="inp num">2</span>笔</span></td><td><span class="inp">30</span></td><td><span class="inp">30.00</span></td><td><span class="lnk d">删除</span></td></tr>
+            <tr><td><span class="seq">第<span class="inp num">2</span>笔</span></td><td><span class="inp">40</span></td><td><span class="inp">40.00</span></td><td><span class="lnk d">删除</span></td></tr>
+          </tbody>
+        </table></div>
+        <div class="hint"><span class="lnk">＋ 添加梯度</span>　充值笔数手动输入正整数（≥1，不设上限）；<span class="only-cnt">笔序含义随「充值次数类型」变化（如每日次数下「第2笔」=当日第2笔）。</span></div>
+      </div></div>
+      <div class="row"><div class="k">领取次数</div><div class="v"><span class="inp ro">领取最高一档</span><div class="hint">充值次数活动固定为最高一档，不可改。</div></div></div>
+      <div class="row"><div class="k"><i>*</i>过期天数</div><div class="v"><span class="inp">6</span></div></div>
+      <div class="omit">…稽核方式 / 稽核倍数 / 申领终端 等现有配置，此处省略</div>
+      <div class="row" id="rulerow"><div class="k"><i>*</i>规则说明</div><div class="v">
+        <div class="new"><span class="tag chg">系统自带文案随配置联动</span>
+          <div class="radios">
+            <label class="rd" for="rs"><span class="dot"></span>系统自带</label>
+            <label class="rd" for="rc"><span class="dot"></span>自定义</label>
+          </div>
+          <div class="sysbox">
+            <div class="sys-h"><span>简体中文</span><span class="lang">English</span><em>只读预览，按当前配置自动生成</em></div>
+            <ol class="sysrule">
+              <li class="r1 q0">活动期间，会员<mark>按注册后的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+              <li class="r1 q4">活动期间，会员<mark>按活动期间的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+              <li class="r1 q1">活动期间，会员<mark>每日按当日充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+              <li class="r1 q2">活动期间，会员<mark>每周按本周充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+              <li class="r1 q3">活动期间，会员<mark>每月按本月充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+              <li>任意方式充值都可获得奖励，充值成功后，可前往活动详情或者待领取页面进行查看，若未查看到奖励，可尝试点击刷新或等待几分钟后再试</li>
+              <li class="r3 k-n">获得的奖励 <mark>次日10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+              <li class="r3 k-r">获得的奖励 <mark>实时领取</mark>，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+              <li class="r3 k-d">获得的奖励 <mark>每日10:00:00至22:00:00</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+              <li class="r3 k-nw">获得的奖励 <mark>下周一10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+              <li class="r3 k-w">获得的奖励 <mark>每周一10:00:00至22:00:00</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+              <li class="r3 k-nm">获得的奖励 <mark>下月5号10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+              <li class="r3 k-m">获得的奖励 <mark>每月5号10:00:00至22:00:00</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+              <li><mark>奖励自可领取起6天内有效</mark>，过期未领取则直接作废</li>
+              <li>本活动所赠送的奖金（不含本金）需1.00倍有效投注才能提现，投注不限游戏平台</li>
+            </ol>
+          </div>
+          <div class="cusbox">
+            <div class="inp ta">1. 每月第2笔充值满40元，最高可领40元奖励。<br>2. 奖励下月5号10点后可领取。</div>
+            <div class="warn">已选择自定义：修改充值次数类型、领取时间、过期天数后，规则说明不会自动更新，请手动核对。</div>
+          </div>
+          <div class="hint">系统自带：第 1 条随充值次数类型、第 3 条随领取时间、第 4 条随过期天数生成；其他条目沿用现有模板。</div>
+        </div></div></div>
+    </div>
+    <div class="dlg-f"><button class="btn" type="button">取消</button><button class="btn p" type="button">确认</button></div>
+  </section>
+
+  <!-- H5 -->
+  <div class="phone-col">
+    <p class="cap">前台 H5 · 活动详情页（/activity-details?id=）</p>
+    <div class="phone">
+      <div class="ph-top"><span class="back">←</span><span class="tt">Tavian充值次数</span><span class="rec">领取记录</span></div>
+      <div class="card">
+        <div class="card-h"><b>充值奖励任务</b><span>⟳ 刷新奖励</span></div>
+        <div class="subwrap"><span class="tag chg">原「仅最高档奖励可领取」</span>
+          <div class="sub s0">按<b>注册后</b>充值次数奖励</div>
+          <div class="sub s4">按<b>活动期间</b>充值次数奖励</div>
+          <div class="sub s1">按<b>每日</b>充值次数奖励，每日00:00重置</div>
+          <div class="sub s2">按<b>每周</b>充值次数奖励，每周一00:00重置</div>
+          <div class="sub s3">按<b>每月</b>充值次数奖励，每月1日00:00重置</div>
+        </div>
+        <div class="task"><span class="ico"></span><div><div class="ttl">第1笔充值 ≥ 10，奖励 <em>10.00</em></div><div class="bar">--/10</div><div class="st"><span class="pf p1">今日</span><span class="pf p2">本周</span><span class="pf p3">本月</span>尚未完成第1笔充值</div></div><span class="go">未达标</span></div>
+        <div class="task"><span class="ico"></span><div><div class="ttl">第1笔充值 ≥ 20，奖励 <em>20.00</em></div><div class="bar">--/20</div><div class="st"><span class="pf p1">今日</span><span class="pf p2">本周</span><span class="pf p3">本月</span>尚未完成第1笔充值</div></div><span class="go">未达标</span></div>
+        <div class="task"><span class="ico"></span><div><div class="ttl">第2笔充值 ≥ 30，奖励 <em>30.00</em></div><div class="bar">--/30</div><div class="st"><span class="pf p1">今日</span><span class="pf p2">本周</span><span class="pf p3">本月</span>尚未完成第2笔充值</div></div><span class="go">未达标</span></div>
+        <div class="task"><span class="ico"></span><div><div class="ttl">第2笔充值 ≥ 40，奖励 <em>40.00</em></div><div class="bar">--/40</div><div class="st"><span class="pf p1">今日</span><span class="pf p2">本周</span><span class="pf p3">本月</span>尚未完成第2笔充值</div></div><span class="go">未达标</span></div>
+      </div>
+      <div class="rules"><span class="badge">活动说明</span>
+        <ol>
+          <li class="r1 q0">活动期间，会员<mark>按注册后的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+              <li class="r1 q4">活动期间，会员<mark>按活动期间的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+          <li class="r1 q1">活动期间，会员<mark>每日按当日充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+          <li class="r1 q2">活动期间，会员<mark>每周按本周充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+          <li class="r1 q3">活动期间，会员<mark>每月按本月充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+          <li>任意方式充值都可获得奖励，充值成功后，可前往活动详情或者待领取页面进行查看，若未查看到奖励，可尝试点击刷新或等待几分钟后再试</li>
+          <li class="r3 k-n">获得的奖励 <mark>次日10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+          <li class="r3 k-r">获得的奖励 <mark>实时领取</mark>，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+          <li class="r3 k-d">获得的奖励 <mark>每日10:00:00至22:00:00</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+          <li class="r3 k-nw">获得的奖励 <mark>下周一10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+          <li class="r3 k-w">获得的奖励 <mark>每周一10:00:00至22:00:00</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+          <li class="r3 k-nm">获得的奖励 <mark>下月5号10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+          <li class="r3 k-m">获得的奖励 <mark>每月5号10:00:00至22:00:00</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
+          <li><mark>奖励自可领取起6天内有效</mark>，过期未领取则直接作废</li>
+          <li>本活动所赠送的奖金（不含本金）需1.00倍有效投注才能提现，投注不限游戏平台</li>
+        </ol>
+        <div class="cus-front">1. 每月第2笔充值满40元，最高可领40元奖励。<br>2. 奖励下月5号10点后可领取。</div>
+      </div>
+      <div class="mask">当前活动条件不是「充值次数」<br>不显示充值次数类型，前台副标题保持原逻辑</div>
+    </div>
+  </div>
+</div>
+
+<section class="matrix matrix2" aria-label="领取时间与选择时间">
+  <h2>领取时间 × 选择时间控件</h2>
+  <div class="tbl-w"><table>
+    <thead><tr><th>领取时间</th><th>适用类型</th><th>选择时间控件</th><th>含义（以每月次数为例）</th><th>示例</th></tr></thead>
+    <tbody>
+      <tr class="n-n"><td>次日领取</td><td>全部</td><td>时间点 HH:mm:ss</td><td>奖励生成的次日，该时间以后可领取</td><td>10-24 达标 → 10-25 10:00:00 起可领</td></tr>
+      <tr class="n-r"><td>实时领取</td><td>全部</td><td>隐藏</td><td>奖励生成后立即可领取</td><td>达标即可领</td></tr>
+      <tr class="n-d"><td>每日</td><td>每日 / 每周 / 每月</td><td>时间区间</td><td>奖励生成后，每天在该时间段内可领取；生成时已过当天区间则次日区间可领</td><td>每日 10:00:00–22:00:00</td></tr>
+      <tr class="n-nw"><td>下周</td><td>每周</td><td>周几 + 时间点</td><td>本周期奖励在下周指定周几的该时间以后可领取</td><td>本周达标 → 下周一 10:00:00 起可领</td></tr>
+      <tr class="n-w"><td>每周</td><td>每周</td><td>周几 + 时间区间</td><td>奖励生成后，每周指定周几的时间区间内可领取</td><td>每周一 10:00:00–22:00:00</td></tr>
+      <tr class="n-nm"><td>下月</td><td>每月</td><td>几号 + 时间点</td><td>本月周期的奖励在下月指定日的该时间以后可领取</td><td>10 月达标 → 11-05 10:00:00 起可领</td></tr>
+      <tr class="n-m"><td>每月</td><td>每月</td><td>几号 + 时间区间</td><td>奖励生成后，每月指定日的时间区间内可领取</td><td>每月 5 号 10:00:00–22:00:00</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="matrix" aria-label="规则矩阵">
+  <h2>充值次数类型 · 规则矩阵</h2>
+  <div class="tbl-w"><table>
+    <thead><tr><th>类型</th><th>笔序计数范围</th><th>重置时间（UTC+8）</th><th>每周期可领</th><th>领取时间可选项</th><th>前台副标题（简中）</th><th>进度前缀</th></tr></thead>
+    <tbody>
+      <tr class="m0"><td>总次数（新建默认）</td><td>会员注册后全部成功充值</td><td>不重置</td><td>活动期间 1 次</td><td>实时领取 / 次日领取</td><td>按注册后充值次数奖励</td><td>无</td></tr>
+      <tr class="m4"><td>活动期间次数（存量默认）</td><td>活动开始后全部成功充值，活动前不计</td><td>不重置</td><td>活动期间 1 次</td><td>实时领取 / 次日领取</td><td>按活动期间充值次数奖励</td><td>无</td></tr>
+      <tr class="m1"><td>每日次数</td><td>当日 00:00:00–23:59:59 成功充值</td><td>每日 00:00</td><td>每日 1 次</td><td>次日 / 实时 / 每日</td><td>按每日充值次数奖励，每日00:00重置</td><td>今日</td></tr>
+      <tr class="m2"><td>每周次数</td><td>周一 00:00 – 周日 23:59:59</td><td>每周一 00:00</td><td>每周 1 次</td><td>次日 / 实时 / 每日 / 下周 / 每周</td><td>按每周充值次数奖励，每周一00:00重置</td><td>本周</td></tr>
+      <tr class="m3"><td>每月次数</td><td>1 日 00:00 – 月末 23:59:59</td><td>每月 1 日 00:00</td><td>每月 1 次</td><td>次日 / 实时 / 每日 / 下月 / 每月</td><td>按每月充值次数奖励，每月1日00:00重置</td><td>本月</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="notes">
+    <li>笔序按「充值成功（到账）时间」排序，按币种分别计数；退款不影响已达标结果。</li>
+    <li>判定口径不变：恰好第 N 笔的单笔金额 ≥ M 才达标；同一周期内所有达标档跨 N 比较，只取门槛最高的一档；未领取前可升档，已领取后本周期不再发放。</li>
+    <li>笔序按类型对应的范围计数（总次数=注册后，日/周/月=自然周期），包含活动开始前的充值；但只有发生在活动时间内的那一笔可以达标。活动期间次数从活动开始计笔序，活动前充值不计；本需求上线前创建的活动默认为活动期间次数。</li>
+  </ul>
+</section>
+</div>
