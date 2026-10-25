@@ -1,0 +1,529 @@
+<title>提现两步验证原型</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 三栏工作台 —— 左：后台配置 + 模拟面板 ｜ 中：H5 手机 ｜ 右：实时判定与流程日志；窄屏单列堆叠 */
+:root{
+  --bg:#eef1f5; --panel:#ffffff; --ink:#1f2633; --mut:#667085; --line:#dde2ea;
+  --accent:#2f6fed; --accent-soft:#e8effd; --ok:#1f9d55; --warn:#b7791f; --bad:#d64545;
+  --sans:-apple-system,"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14171d; --panel:#1c2028; --ink:#e7eaf0; --mut:#9aa3b2; --line:#2c323d;
+  --accent:#6f9cff; --accent-soft:#1f2a42; --ok:#4cc38a; --warn:#e2b04a; --bad:#ff7a7a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14171d; --panel:#1c2028; --ink:#e7eaf0; --mut:#9aa3b2; --line:#2c323d;
+  --accent:#6f9cff; --accent-soft:#1f2a42; --ok:#4cc38a; --warn:#e2b04a; --bad:#ff7a7a; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:13px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+button,input,select{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{max-width:1440px;margin:0 auto 16px;display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-end;justify-content:space-between}
+.top h1{margin:0;font-size:20px;text-wrap:balance}
+.meta{color:var(--mut);font-size:12px}
+.meta b{color:var(--ink);font-weight:600}
+.demo-key{font-family:var(--mono);font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;color:var(--mut)}
+.demo-key b{color:var(--ink)}
+.grid{max-width:1440px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.15fr) 392px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:1240px){.grid{grid-template-columns:minmax(0,1fr) 392px}.col-log{grid-column:1 / -1}}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.card-h h2{margin:0;font-size:13px;letter-spacing:.02em}
+.eyebrow{font-size:11px;letter-spacing:.08em;color:var(--mut);text-transform:uppercase}
+.card-b{padding:14px}
+
+/* ===== 后台复刻（Element-UI 风格，固定浅色以还原真实后台） ===== */
+.adm{--e-pri:#1f6dff;--e-t1:#303133;--e-t2:#606266;--e-t3:#909399;--e-dis:#c0c4cc;--e-bd:#dcdfe6;--e-bd2:#ebeef5;--e-bg:#f5f7fa;
+  background:#fff;color:var(--e-t1);border-radius:8px;overflow:hidden;border:1px solid var(--line);font-size:12px;color-scheme:light}
+.adm-bar{background:var(--e-pri);color:#fff;display:flex;justify-content:space-between;padding:0 14px;height:40px;align-items:center;font-size:12px}
+.adm-crumb{padding:10px 14px;border-bottom:1px solid var(--e-bd2);color:var(--e-t3);display:flex;flex-wrap:wrap;gap:4px 14px}
+.adm-crumb b{color:var(--e-t1)}
+.adm-tabs{display:flex;gap:18px;padding:0 14px;border-bottom:1px solid var(--e-bd2);overflow-x:auto}
+.adm-tabs span{padding:9px 0;white-space:nowrap;color:var(--e-t2)}
+.adm-tabs span.on{color:var(--e-pri);border-bottom:2px solid var(--e-pri)}
+.adm-body{padding:14px}
+.adm-sec{font-weight:600;font-size:13px;margin:0 0 10px;display:flex;gap:8px;align-items:center}
+.ck{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none;color:var(--e-t2)}
+.ck input{width:14px;height:14px;accent-color:var(--e-pri);margin:0}
+.ck.dis{color:var(--e-dis);cursor:not-allowed}
+.ck .sub{color:var(--e-t3)}
+.box{border:1px solid var(--e-bd);border-radius:4px;padding:12px 14px;margin:8px 0 10px 20px;background:#fff}
+.box.off{opacity:.45;pointer-events:none}
+.box h4{margin:0 0 8px;font-size:12px;color:var(--e-t1)}
+.radios{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.radios label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:var(--e-t2)}
+.radios input{accent-color:var(--e-pri);margin:0}
+.stepper{display:inline-flex;border:1px solid var(--e-bd);border-radius:4px;overflow:hidden;height:26px;vertical-align:middle}
+.stepper button{width:26px;border:0;background:var(--e-bg);color:var(--e-t2);cursor:pointer}
+.stepper button:disabled{color:var(--e-dis);cursor:not-allowed}
+.stepper input{width:42px;border:0;border-inline:1px solid var(--e-bd);text-align:center;font-size:12px;color:var(--e-t1);background:#fff}
+.dash{border-top:1px dashed var(--e-bd);margin:12px 0}
+.items{display:flex;flex-wrap:wrap;gap:10px 24px}
+.item{display:flex;flex-direction:column;gap:2px;min-width:110px}
+.e-link{color:var(--e-pri);cursor:pointer;font-size:12px;background:none;border:0;padding:0 0 0 20px;text-align:left}
+.e-tip{font-size:11px;color:#e6a23c;padding-left:20px;max-width:190px}
+.e-err{color:#f56c6c;font-size:12px;margin-top:6px}
+.new{font-size:10px;line-height:16px;padding:0 5px;border-radius:3px;background:#fdf6ec;color:#b7791f;border:1px solid #f5dab1;font-weight:500}
+.other{color:var(--e-dis);display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.adm-foot{display:flex;justify-content:flex-end;gap:8px;padding:10px 14px;border-top:1px solid var(--e-bd2);background:#fafbfc;align-items:center}
+.e-btn{height:28px;padding:0 14px;border-radius:4px;border:1px solid var(--e-bd);background:#fff;color:var(--e-t2);cursor:pointer;font-size:12px}
+.e-btn.pri{background:var(--e-pri);border-color:var(--e-pri);color:#fff}
+.dirty{color:#e6a23c;font-size:12px;margin-right:auto}
+.e-toast{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:#f0f9eb;color:#67c23a;border:1px solid #e1f3d8;padding:8px 16px;border-radius:4px;z-index:50;font-size:12px}
+.e-toast.err{background:#fef0f0;color:#f56c6c;border-color:#fde2e2}
+
+/* ===== 模拟面板 ===== */
+.sim{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+@media (max-width:480px){.sim{grid-template-columns:minmax(0,1fr)}}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.sw span{color:var(--ink)}
+.sw small{display:block;color:var(--mut);font-size:11px}
+.tg{appearance:none;width:34px;height:20px;border-radius:10px;background:var(--line);position:relative;cursor:pointer;flex:none;transition:background .15s}
+.tg::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.tg:checked{background:var(--accent)}
+.tg:checked::after{transform:translateX(14px)}
+.sel{height:28px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);padding:0 6px;font-size:12px}
+.ghost{height:28px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:6px;padding:0 12px;cursor:pointer;font-size:12px}
+.note{font-size:12px;color:var(--mut);margin:10px 0 0}
+
+/* ===== 判定 & 日志 ===== */
+.verdict{display:flex;flex-direction:column;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-weight:600;font-size:12px;width:max-content;max-width:100%}
+.pill.need{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.pill.free{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.pill.block{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:12px}
+.steps li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px;color:var(--mut)}
+.steps li b{color:var(--ink);font-weight:600}
+.steps .y::before{content:"✓";color:var(--ok)} .steps .n::before{content:"✕";color:var(--bad)} .steps .a::before{content:"→";color:var(--accent)}
+.log{font-family:var(--mono);font-size:11.5px;max-height:330px;overflow:auto;display:flex;flex-direction:column;gap:3px;margin:0;padding:0;list-style:none}
+.log li{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;color:var(--mut);border-bottom:1px dashed var(--line);padding-bottom:3px}
+.log li span:last-child{color:var(--ink);word-break:break-all}
+.log .empty{display:block;color:var(--mut);border:0}
+.rules{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--mut)}
+.rules b{color:var(--ink)}
+
+/* ===== 手机（还原前台深色金色皮肤，固定深色） ===== */
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.phone{--p-bg:#21242c;--p-card:#2a2d36;--p-bd:#3b3f4a;--p-t1:#eceef2;--p-t2:#8d929e;--p-gold:#f5c23a;--p-gold2:#ffb300;--p-red:#ff5b5b;
+  width:min(375px,100%);height:760px;border-radius:30px;border:9px solid #0d0f13;background:var(--p-bg);color:var(--p-t1);
+  position:relative;overflow:hidden;font-size:13px;box-shadow:0 18px 40px -20px rgba(0,0,0,.5);color-scheme:dark}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;overflow-y:auto}
+.p-head{display:flex;align-items:center;gap:22px;padding:14px 14px 0;border-bottom:1px solid #2f323b;flex:none}
+.p-head .back{font-size:18px;color:var(--p-t2);cursor:pointer;background:none;border:0;padding:0 0 10px}
+.p-tab{padding-bottom:10px;color:var(--p-t1);position:relative;font-size:14px}
+.p-tab.on{color:var(--p-gold);font-weight:600}
+.p-tab.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:var(--p-gold)}
+.p-sec{padding:12px 14px;border-bottom:1px solid #2f323b}
+.bal{display:flex;align-items:baseline;gap:10px;color:var(--p-t2)}
+.bal b{color:var(--p-gold);font-size:20px;font-variant-numeric:tabular-nums}
+.chans{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.chan{position:relative;border:1px solid var(--p-bd);border-radius:8px;text-align:center;padding:10px 2px;font-size:12px;background:var(--p-card)}
+.chan.on{border-color:var(--p-gold);color:var(--p-gold)}
+.chan i{position:absolute;top:-6px;left:-1px;font-style:normal;font-size:10px;background:#ff4d4d;color:#fff;border-radius:6px 6px 6px 0;padding:0 4px}
+.lab{margin:14px 0 8px;display:flex;justify-content:space-between;align-items:center}
+.fld{height:44px;border:1px solid var(--p-bd);border-radius:8px;display:flex;align-items:center;padding:0 12px;gap:8px;background:#1b1d23}
+.fld input{flex:1;min-width:0;background:transparent;border:0;color:var(--p-t1);font-size:15px;outline:none}
+.fld input::placeholder{color:#6b707b}
+.pwd{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--p-bd);border-radius:8px;overflow:hidden;position:relative;height:50px;background:#2b2b2b}
+.pwd span{border-left:1px solid var(--p-bd);display:flex;align-items:center;justify-content:center;font-size:18px}
+.pwd span:first-child{border-left:0}
+.pwd input{position:absolute;inset:0;opacity:0;width:100%;cursor:text}
+.btn-gold{height:46px;border:0;border-radius:10px;background:var(--p-gold);color:#1d1d1d;font-size:15px;width:100%;cursor:pointer;font-weight:500}
+.btn-gold:disabled{opacity:.45;cursor:not-allowed}
+.p-err{color:var(--p-red);font-size:12px;margin-top:6px;min-height:16px}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:5;padding:16px}
+.dlg{width:100%;background:#1f2128;border-radius:14px;padding:18px 18px 20px;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.dlg h3{margin:0 0 14px;font-size:17px}
+.vt{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.vt button{border:0;background:transparent;color:var(--p-t2);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+.vt button.on{background:var(--p-gold);color:#2b2100}
+.hint{color:var(--p-t2);font-size:12px;margin:0 0 10px}
+.dlg .fld{background:#24272f}
+.send{background:none;border:0;color:var(--p-gold);cursor:pointer;font-size:13px;white-space:nowrap}
+.send:disabled{color:var(--p-t2);cursor:not-allowed}
+.dlg select{width:100%;height:44px;border:1px solid var(--p-bd);border-radius:8px;background:#24272f;color:var(--p-t1);padding:0 10px;font-size:14px;margin-bottom:10px}
+.btn-cta{height:48px;border:0;border-radius:10px;width:100%;margin-top:14px;font-size:15px;cursor:pointer;background:linear-gradient(90deg,var(--p-gold2),#ffc533);color:#3a2a00}
+.btn-cta:disabled{opacity:.5;cursor:not-allowed}
+.x{width:36px;height:36px;border-radius:50%;border:2px solid #fff;background:transparent;color:#fff;font-size:18px;cursor:pointer}
+.guide p{color:var(--p-t2);margin:0 0 12px;font-size:13px;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.chips span{border:1px solid var(--p-bd);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--p-t1)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.btn-line{height:44px;border-radius:10px;border:1px solid var(--p-bd);background:transparent;color:var(--p-t1);cursor:pointer;font-size:14px}
+.ptoast{position:absolute;left:14px;right:14px;top:44%;background:#fff;color:#222;border-radius:6px;padding:14px 14px;display:flex;gap:12px;align-items:center;z-index:9;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:15px;line-height:1.45}
+.ptoast .ic{width:24px;height:24px;border-radius:50%;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:14px}
+.ptoast.e .ic{background:#e5484d}
+.ptoast div:last-child{text-align:center;flex:1;word-break:break-all}
+/* 安全中心 */
+.sc-head{display:flex;align-items:center;justify-content:space-between;background:#16181d;padding:14px;flex:none}
+.sc-head button{background:none;border:0;color:var(--p-t2);font-size:18px;cursor:pointer}
+.logo{background:#e9efff;color:#2848a8;font-size:11px;font-weight:700;padding:2px 10px;border:1px solid #9bb3ff}
+.sc-tip{margin:12px 14px 0;background:rgba(245,194,58,.12);border:1px solid rgba(245,194,58,.35);color:var(--p-gold);border-radius:8px;padding:8px 10px;font-size:12px}
+.grp{margin:12px 14px 0;background:#1b1d22;border-radius:10px;overflow:hidden}
+.row{display:flex;align-items:center;gap:10px;padding:12px 12px;border-bottom:1px solid #2a2c33;width:100%;background:transparent;color:inherit;border-inline:0;border-top:0;text-align:left;font-size:13px}
+.row:last-child{border-bottom:0}
+button.row{cursor:pointer}
+.row .ic2{width:18px;text-align:center}
+.row .nm{flex:1;position:relative}
+.row .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--p-red);margin-left:3px;vertical-align:super}
+.row .st{color:var(--p-t2)}
+.row .st.y{color:var(--p-gold)}
+.row .go{font-size:11px;background:var(--p-gold);color:#2b2100;border-radius:4px;padding:1px 6px;margin-left:6px}
+.row.hl{background:rgba(245,194,58,.07)}
+.back-wd{margin:16px 14px}
+.phone-cap{font-size:12px;color:var(--mut);text-align:center;max-width:375px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div>
+    <div class="eyebrow">UG · 会员 · 注册和验证 · 安全中心配置 · 提现资产保护</div>
+    <h1>申请提现两步验证 · 交互原型</h1>
+    <div class="meta">版本 <b>V1.2</b> · 2026-10-25 · 对标竞品 WG · 后台改动 + 前台提现验证弹窗 + 未绑定引导</div>
+  </div>
+  <div class="demo-key">演示数据：短信/谷歌验证码 <b>123456</b> · 密保答案 <b>北京</b> · 提现密码已预填</div>
+</header>
+
+<main class="grid">
+  <!-- 左栏 -->
+  <section class="col">
+    <div class="adm" aria-label="后台配置复刻">
+      <div class="adm-bar"><span>LG娱乐城(1170)</span><span>(UTC +8) 2026-10-25　asean</span></div>
+      <div class="adm-crumb"><span>会员</span><span>›</span><span>注册和验证</span><span>›</span><b>安全中心配置</b></div>
+      <div class="adm-tabs"><span>登录/注册配置</span><span class="on">安全中心配置</span><span>绑定三方配置</span><span>短信配置</span><span>邮箱验证</span><span>KYC验证配置</span></div>
+      <div class="adm-body">
+        <div class="adm-sec">提现资产保护 <span class="new">本次更新</span></div>
+        <label class="ck"><input type="checkbox" id="cEnabled"> 申请提现两步验证 <span class="sub">(勾选开启)</span></label>
+        <div class="box" id="cBox">
+          <h4>验证频率</h4>
+          <div class="radios" role="radiogroup" aria-label="验证频率">
+            <label><input type="radio" name="freq" value="first" id="fFirst"> 只首次提现验证</label>
+            <label><input type="radio" name="freq" value="daily" id="fDaily"> 每天首次提现验证</label>
+            <label><input type="radio" name="freq" value="interval" id="fInt"> 每隔
+              <span class="stepper"><button type="button" id="nMinus" aria-label="减少">−</button><input id="cN" inputmode="numeric" value="1" aria-label="间隔天数"><button type="button" id="nPlus" aria-label="增加">+</button></span> 天验证一次</label>
+            <label><input type="radio" name="freq" value="every" id="fEvery"> 每次提现都验证</label>
+          </div>
+          <div class="dash"></div>
+          <h4>安全验证项 <span style="color:#909399;font-weight:400">（至少勾选 1 项，会员可任选其一验证）</span></h4>
+          <div class="items">
+            <div class="item"><label class="ck" id="lSms"><input type="checkbox" id="iSms"> 短信验证</label>
+              <button type="button" class="e-link" id="toSms">查看短信配置</button>
+              <span class="e-tip" id="smsTip" hidden>请先完成「短信配置」后再开启此项</span></div>
+            <div class="item"><label class="ck"><input type="checkbox" id="iGoogle"> 谷歌安全码验证 <span class="new">新增</span></label></div>
+            <div class="item"><label class="ck"><input type="checkbox" id="iQ"> 密保问题验证</label></div>
+          </div>
+          <div class="e-err" id="cErr" hidden></div>
+        </div>
+        <div class="other">
+          <span>☐ 添加不记名虚拟币地址两步验证（勾选开启）— 本期不涉及</span>
+          <span>☐ 添加法定货币账号两步验证（勾选开启）— 本期不涉及</span>
+        </div>
+      </div>
+      <div class="adm-foot"><span class="dirty" id="dirty" hidden>● 有未保存的修改</span>
+        <button class="e-btn" id="cCancel" type="button">取消</button><button class="e-btn pri" id="cSave" type="button">保存</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h2>模拟会员与环境</h2><button class="ghost" id="reset" type="button">重置演示</button></div>
+      <div class="card-b">
+        <div class="sim">
+          <label class="sw"><span>手机已绑定<small>安全中心「手机」</small></span><input type="checkbox" class="tg" id="mPhone"></label>
+          <label class="sw"><span>谷歌验证器已绑定</span><input type="checkbox" class="tg" id="mGoogle"></label>
+          <label class="sw"><span>密保问题已设置</span><input type="checkbox" class="tg" id="mQ"></label>
+          <label class="sw"><span>稽核已达标</span><input type="checkbox" class="tg" id="mAudit"></label>
+          <label class="sw"><span>当前为信任设备<small>沿用现有免验证规则</small></span><input type="checkbox" class="tg" id="mTrust"></label>
+          <label class="sw"><span>短信通道可用<small>短信配置有可用通道</small></span><input type="checkbox" class="tg" id="mSmsCh"></label>
+          <label class="sw" style="grid-column:1 / -1"><span>上次通过提现两步验证</span>
+            <select class="sel" id="mHist"><option value="never">从未验证</option><option value="0">今天</option><option value="2">2 天前</option><option value="10">10 天前</option></select></label>
+        </div>
+        <p class="note">本面板只用于原型演示，非产品界面。后台配置与本面板的修改都会即时作用到手机演示和右侧判定（真实环境需保存后 3-5 分钟生效）。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 中栏 手机 -->
+  <section class="phone-wrap">
+    <div class="phone" id="phone">
+      <!-- 提现页 -->
+      <div class="scr" id="sWd">
+        <div class="p-head"><button class="back" type="button" aria-label="返回">‹</button><span class="p-tab on">提现申请</span><span class="p-tab">收款账户</span><span class="p-tab">提现记录</span></div>
+        <div class="p-sec"><div class="bal">余额 <b id="bal">2,327.94</b> <span style="color:var(--p-gold)">⟳</span></div></div>
+        <div class="p-sec">
+          <div class="chans"><div class="chan"><i>🔥</i>三方钱包</div><div class="chan"><i style="background:#7c3aed">幸运</i>幸运钱包</div><div class="chan"><i style="background:#7c3aed">NO</i>NO钱包</div><div class="chan"><i>🔥</i>微信支付</div><div class="chan on"><i>🔥</i>银行卡转账</div><div class="chan"><i>🔥</i>支付宝</div></div>
+        </div>
+        <div style="padding:0 14px 20px">
+          <div class="lab">选择收款账号</div>
+          <div class="fld" style="justify-content:space-between"><span>🏛 江西上高富民村镇银行(****5845)</span><span style="color:var(--p-t2)">⌄</span></div>
+          <div class="lab">提现金额</div>
+          <div class="fld"><span style="color:var(--p-t2)">¥</span><input id="amt" inputmode="decimal" placeholder="请输入金额" value="100" aria-label="提现金额"></div>
+          <div class="lab">验证提现密码 <span style="color:var(--p-t2)">👁</span></div>
+          <div class="pwd" id="pwdBox"><span></span><span></span><span></span><span></span><span></span><span></span><input id="pwd" inputmode="numeric" maxlength="6" aria-label="提现密码" value="123456"></div>
+          <div class="p-err" id="wdErr"></div>
+          <button class="btn-gold" id="submit" type="button">确定提现</button>
+        </div>
+      </div>
+
+      <!-- 安全中心 -->
+      <div class="scr" id="sSc" hidden>
+        <div class="sc-head"><button type="button" id="scBack" aria-label="返回">‹</button><span class="logo">logo 500×100px</span><span style="font-size:16px">安全中心</span></div>
+        <div class="sc-tip" id="scTip" hidden>为保障资金安全，提现前需完成安全验证。绑定下方任一 <b>「去绑定」</b> 项目后即可继续提现。</div>
+        <div class="grp">
+          <div class="row"><span class="ic2">👤</span><span class="nm">会员账号</span><span class="st">Tavian ⧉</span></div>
+          <button class="row" id="rPhone" type="button"><span class="ic2">📱</span><span class="nm">手机</span><span class="st"></span> ›</button>
+          <button class="row" id="rGoogle" type="button"><span class="ic2">✳</span><span class="nm">谷歌验证器</span><span class="st"></span> ›</button>
+        </div>
+        <div class="grp">
+          <div class="row"><span class="ic2">🔑</span><span class="nm">登录密码</span><span class="st"></span> ›</div>
+          <div class="row"><span class="ic2">💳</span><span class="nm">提现密码</span><span class="st y">已设置</span> ›</div>
+          <button class="row" id="rQ" type="button"><span class="ic2">🛡</span><span class="nm">密保问题</span><span class="st"></span> ›</button>
+        </div>
+        <div class="back-wd" id="backWd" hidden><button class="btn-gold" type="button" id="backWdBtn">已完成绑定，返回提现</button></div>
+      </div>
+
+      <!-- 验证弹窗 -->
+      <div class="mask" id="mVerify" hidden>
+        <div class="dlg" role="dialog" aria-labelledby="vTitle">
+          <h3 id="vTitle">安全验证</h3>
+          <div class="vt" id="vTabs"></div>
+          <div id="vPane"></div>
+          <div class="p-err" id="vErr"></div>
+          <button class="btn-cta" id="vOk" type="button" disabled>确认验证</button>
+        </div>
+        <button class="x" id="vClose" type="button" aria-label="关闭">✕</button>
+      </div>
+
+      <!-- 未绑定引导 -->
+      <div class="mask" id="mGuide" hidden>
+        <div class="dlg guide" role="dialog" aria-labelledby="gTitle">
+          <h3 id="gTitle">请先绑定安全验证方式</h3>
+          <p>为保障您的资金安全，提现前需完成安全验证。您尚未绑定以下任一验证方式，请先前往安全中心绑定其中一项：</p>
+          <div class="chips" id="gChips"></div>
+          <div class="two"><button class="btn-line" id="gCancel" type="button">暂不提现</button><button class="btn-gold" id="gGo" type="button" style="height:44px">去绑定</button></div>
+        </div>
+      </div>
+
+      <div class="ptoast" id="pToast" hidden><span class="ic">✓</span><div id="pToastTx"></div></div>
+    </div>
+    <div class="phone-cap">前台 H5（WEB / APP 同逻辑）。依次点击「确定提现」→ 验证 → 提交成功。</div>
+  </section>
+
+  <!-- 右栏 -->
+  <section class="col col-log">
+    <div class="card">
+      <div class="card-h"><h2>本次提现判定（实时）</h2><span class="eyebrow">按当前配置 + 会员状态</span></div>
+      <div class="card-b verdict" id="verdict"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>交互日志</h2><button class="ghost" id="clearLog" type="button">清空</button></div>
+      <div class="card-b"><ul class="log" id="log"><li class="empty">点击手机里的「确定提现」开始演示。</li></ul></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>关键规则</h2></div>
+      <div class="card-b"><ol class="rules">
+        <li><b>可选验证方式 = 后台勾选项 ∩ 会员已绑定项</b>（短信还需通道可用）；有 1 项即弹验证，会员任选其一。</li>
+        <li>默认三项全勾、<b>每次提现都验证</b>（与现状一致）。频率命中才验证；<b>信任设备</b>沿用现有规则免验证。</li>
+        <li>同时开启防刷风控「首次提现再次短信验证」时，本功能验证通过后不再弹第二次。</li>
+        <li>后台勾选项会员<b>一项都没绑定</b>：弹「请先绑定」引导框 →「去绑定」进安全中心，可绑定项高亮；绑定后返回提现，金额保留。</li>
+        <li>短信通道全部不可用：短信项自动失效；剩余无勾选项时本次免验证。</li>
+        <li>同一验证方式连续错误 <b>5 次</b>：锁定提现两步验证 30 分钟，到期自动解除。</li>
+        <li>验证通过后立即提交提现，成功提示订单号，记录本次验证时间用于频率判定。</li>
+      </ol></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const M={sms:{name:'手机验证',bind:'手机',row:'rPhone'},google:{name:'谷歌验证',bind:'谷歌验证器',row:'rGoogle'},question:{name:'密保验证',bind:'密保问题',row:'rQ'}};
+const ORDER=['sms','google','question'];
+const FREQ={first:'只首次提现验证',daily:'每天首次提现验证',interval:'每隔 N 天验证一次',every:'每次提现都验证'};
+const DEF_CFG={enabled:true,freq:'every',n:1,items:{sms:true,google:true,question:true}};
+const DEF_MEM={phone:false,google:true,question:false,audit:true,trust:false,smsCh:true,hist:'never'};
+let saved=clone(DEF_CFG), draft=clone(DEF_CFG), mem=clone(DEF_MEM);
+let balance=2327.94, fails={sms:0,google:0,question:0}, lockedUntil=0, curTab=null, timer=null, cd=0, codeSent=false, fromGuide=false;
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function fmt(n){return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function now(){const d=new Date();return d.toTimeString().slice(0,8)}
+function log(t){const ul=$('log');const e=ul.querySelector('.empty');if(e)e.remove();const li=document.createElement('li');li.innerHTML=`<span>${now()}</span><span>${t}</span>`;ul.prepend(li)}
+function bound(k){return k==='sms'?mem.phone:k==='google'?mem.google:mem.question}
+
+/* ---------- 后台 ---------- */
+function renderCfg(){
+  $('cEnabled').checked=draft.enabled;
+  $('cBox').hidden=!draft.enabled;
+  document.querySelectorAll('input[name=freq]').forEach(r=>r.checked=r.value===draft.freq);
+  $('cN').value=draft.n; $('nMinus').disabled=draft.n<=1; $('nPlus').disabled=draft.n>=30;
+  $('iSms').checked=draft.items.sms && mem.smsCh; $('iSms').disabled=!mem.smsCh;
+  $('lSms').classList.toggle('dis',!mem.smsCh); $('smsTip').hidden=mem.smsCh;
+  $('iGoogle').checked=draft.items.google; $('iQ').checked=draft.items.question;
+  $('dirty').hidden=JSON.stringify(draft)===JSON.stringify(saved);
+  renderVerdict();
+}
+function eToast(t,err){const d=document.createElement('div');d.className='e-toast'+(err?' err':'');d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+$('cEnabled').onchange=e=>{draft.enabled=e.target.checked;$('cErr').hidden=true;renderCfg()};
+document.querySelectorAll('input[name=freq]').forEach(r=>r.onchange=()=>{draft.freq=r.value;renderCfg()});
+$('nMinus').onclick=()=>{draft.n=Math.max(1,draft.n-1);renderCfg()};
+$('nPlus').onclick=()=>{draft.n=Math.min(30,draft.n+1);renderCfg()};
+$('cN').onchange=e=>{let v=parseInt(e.target.value,10);if(isNaN(v))v=1;draft.n=Math.min(30,Math.max(1,v));renderCfg()};
+$('iSms').onchange=e=>{draft.items.sms=e.target.checked;renderCfg()};
+$('iGoogle').onchange=e=>{draft.items.google=e.target.checked;renderCfg()};
+$('iQ').onchange=e=>{draft.items.question=e.target.checked;renderCfg()};
+$('toSms').onclick=()=>eToast('新标签页打开：会员 › 注册和验证 › 短信配置');
+$('cSave').onclick=()=>{
+  if(draft.enabled && !ORDER.some(k=>draft.items[k]&&(k!=='sms'||mem.smsCh))){$('cErr').textContent='请至少勾选 1 项安全验证项';$('cErr').hidden=false;return}
+  $('cErr').hidden=true; saved=clone(draft); renderCfg(); renderVerdict();
+  eToast('保存成功，前台 3-5 分钟后生效（原型即时生效）');
+  log(`后台保存：${saved.enabled?'开启':'关闭'}申请提现两步验证；频率=${saved.freq==='interval'?`每隔${saved.n}天`:FREQ[saved.freq]}；验证项=${ORDER.filter(k=>saved.items[k]).map(k=>M[k].name).join('、')||'无'}`);
+};
+$('cCancel').onclick=()=>{draft=clone(saved);$('cErr').hidden=true;renderCfg();log('后台点「取消」，恢复为上次保存的配置')};
+
+/* ---------- 判定 ---------- */
+function decide(){
+  const s=[]; const c=draft;
+  if(!mem.audit) return {type:'block',label:'拦截：稽核未完成',steps:[['n','稽核未达标，提示「稽核未完成，暂无法提现」，不进入验证']]};
+  s.push(['y','稽核已达标、金额与提现密码校验通过']);
+  if(!c.enabled){s.push(['a','后台未开启申请提现两步验证 → 直接提交']);return {type:'free',label:'免验证，直接提交',steps:s}}
+  s.push(['y','后台已开启申请提现两步验证']);
+  if(!ORDER.some(k=>c.items[k])){s.push(['n','后台未勾选任何安全验证项（保存时会被拦截）→ 请先勾选']);return {type:'block',label:'配置无效：未勾选验证项',steps:s,checked:[],avail:[],invalid:true}}
+  if(mem.trust){s.push(['a','当前为信任设备 → 免验证，直接提交']);return {type:'free',label:'免验证（信任设备）',steps:s}}
+  const h=mem.hist; let hit, why;
+  if(c.freq==='first'){hit=h==='never';why=hit?'会员从未通过提现两步验证':'会员已通过过验证'}
+  else if(c.freq==='daily'){hit=h!=='0';why=hit?'今天尚未验证':'今天已验证过'}
+  else if(c.freq==='interval'){hit=h==='never'||Number(h)>=c.n;why=h==='never'?'从未验证':`距上次验证 ${h} 天，${hit?'≥':'<'} ${c.n} 天`}
+  else {hit=true;why='每次都验证'}
+  s.push([hit?'y':'a',`频率「${c.freq==='interval'?`每隔${c.n}天`:FREQ[c.freq]}」：${why}${hit?' → 需要验证':' → 本次免验证'}`]);
+  if(!hit) return {type:'free',label:'免验证（未命中频率）',steps:s};
+  let checked=ORDER.filter(k=>c.items[k]);
+  if(checked.includes('sms')&&!mem.smsCh){checked=checked.filter(k=>k!=='sms');s.push(['a','短信通道不可用，短信验证项自动失效'])}
+  if(!checked.length){s.push(['a','无可用的后台验证项 → 本次免验证']);return {type:'free',label:'免验证（无可用验证项）',steps:s}}
+  s.push(['y',`后台验证项：${checked.map(k=>M[k].name).join('、')}`]);
+  const avail=checked.filter(bound);
+  if(!avail.length){s.push(['n','会员一项都未绑定 → 弹「请先绑定」引导，去安全中心']);return {type:'block',label:'引导绑定',steps:s,checked,avail}}
+  s.push(['y',`会员已绑定：${avail.map(k=>M[k].name).join('、')} → 弹出安全验证，任选其一`]);
+  return {type:'need',label:`需验证 · 可选 ${avail.length} 种`,steps:s,checked,avail};
+}
+function renderVerdict(){
+  const d=decide();
+  $('verdict').innerHTML=`<span class="pill ${d.type}">${d.label}</span><ul class="steps">${d.steps.map(([t,x])=>`<li class="${t}"><span>${x}</span></li>`).join('')}</ul>`;
+}
+
+/* ---------- 模拟面板 ---------- */
+function bindSim(){
+  const map={mPhone:'phone',mGoogle:'google',mQ:'question',mAudit:'audit',mTrust:'trust',mSmsCh:'smsCh'};
+  for(const id in map){$(id).checked=mem[map[id]];$(id).onchange=e=>{mem[map[id]]=e.target.checked;renderCfg();renderSc();renderVerdict()}}
+  $('mHist').value=mem.hist; $('mHist').onchange=e=>{mem.hist=e.target.value;renderVerdict()};
+}
+$('reset').onclick=()=>{saved=clone(DEF_CFG);draft=clone(DEF_CFG);mem=clone(DEF_MEM);balance=2327.94;fails={sms:0,google:0,question:0};lockedUntil=0;fromGuide=false;
+  $('amt').value='100';$('pwd').value='123456';closeAll();show('sWd');renderAll();$('log').innerHTML='<li class="empty">点击手机里的「确定提现」开始演示。</li>'};
+$('clearLog').onclick=()=>{$('log').innerHTML='<li class="empty">日志已清空。</li>'};
+
+/* ---------- 前台：提现页 ---------- */
+function renderPwd(){const v=$('pwd').value.replace(/\D/g,'').slice(0,6);$('pwd').value=v;[...$('pwdBox').querySelectorAll('span')].forEach((s,i)=>s.textContent=i<v.length?'•':'')}
+$('pwd').oninput=renderPwd;
+$('amt').oninput=()=>{$('wdErr').textContent=''};
+function show(id){['sWd','sSc'].forEach(x=>$(x).hidden=x!==id);$('pToast').hidden=true}
+function closeAll(){$('mVerify').hidden=true;$('mGuide').hidden=true;clearInterval(timer)}
+function pToast(t,err,ms=2600){$('pToastTx').innerHTML=t;$('pToast').classList.toggle('e',!!err);$('pToast').querySelector('.ic').textContent=err?'!':'✓';$('pToast').hidden=false;clearTimeout(pToast.t);pToast.t=setTimeout(()=>$('pToast').hidden=true,ms)}
+$('submit').onclick=()=>{
+  const a=parseFloat($('amt').value);
+  if(!$('amt').value){$('wdErr').textContent='请输入提现金额';return}
+  if(isNaN(a)||a<=0||a>balance){$('wdErr').textContent='提现金额超出可提现范围';return}
+  if($('pwd').value.length<6){$('wdErr').textContent='请输入6位提现密码';return}
+  $('wdErr').textContent='';
+  log(`点击「确定提现」金额 ${fmt(a)}`);
+  const d=decide();
+  if(!mem.audit){pToast('稽核未完成，暂无法提现',true);log('前置校验：稽核未达标，拦截');return}
+  if(lockedUntil>Date.now()){pToast('验证失败次数过多，请30分钟后再试或联系客服',true);log('提现两步验证处于锁定期，拦截');return}
+  if(d.type==='free'){log(`判定：${d.label}`);doSubmit(a,false);return}
+  if(d.invalid){pToast('后台未勾选安全验证项，请先在左侧勾选',true);log('配置无效：未勾选任何安全验证项');return}
+  if(d.type==='block'){openGuide(d.checked);return}
+  openVerify(d.avail);
+};
+function doSubmit(a,verified){
+  $('submit').disabled=true;$('submit').textContent='提交中…';
+  setTimeout(()=>{
+    const t=new Date(),p=n=>String(n).padStart(2,'0');
+    const no='WD'+t.getFullYear()+p(t.getMonth()+1)+p(t.getDate())+p(t.getHours())+p(t.getMinutes())+p(t.getSeconds())+String(Math.floor(Math.random()*1e6)).padStart(6,'0');
+    balance=Math.round((balance-a)*100)/100;$('bal').textContent=fmt(balance);
+    $('amt').value='';$('pwd').value='';renderPwd();
+    $('submit').disabled=false;$('submit').textContent='确定提现';
+    if(verified){mem.hist='0';$('mHist').value='0'}
+    renderVerdict();
+    pToast(`提现申请已提交：<br>${no}`);
+    log(`提现申请提交成功 ${no}${verified?'（已通过两步验证，记录验证时间）':''}`);
+  },500);
+}
+
+/* ---------- 验证弹窗 ---------- */
+let avail=[];
+function openVerify(list){$('pToast').hidden=true;avail=list;curTab=list[0];codeSent=false;cd=0;clearInterval(timer);$('mVerify').hidden=false;renderVerify();log(`弹出安全验证，可选：${list.map(k=>M[k].name).join('、')}，默认「${M[list[0]].name}」`)}
+function renderVerify(){
+  $('vTabs').innerHTML=avail.map(k=>`<button type="button" data-k="${k}" class="${k===curTab?'on':''}">${M[k].name}</button>`).join('');
+  $('vTabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(b.dataset.k===curTab)return;curTab=b.dataset.k;$('vErr').textContent='';renderVerify();log(`切换验证方式：${M[curTab].name}`)});
+  let h='';
+  if(curTab==='sms') h=`<p class="hint">验证码将发送至 138****8888</p><div class="fld"><input id="vCode" inputmode="numeric" maxlength="6" placeholder="请输入验证码" aria-label="短信验证码"><button class="send" id="vSend" type="button">${cd>0?`重新发送(${cd}s)`:codeSent?'重新发送':'发送验证码'}</button></div>`;
+  if(curTab==='google') h=`<p class="hint">请输入谷歌验证器中的验证码</p><div class="fld"><input id="vCode" inputmode="numeric" maxlength="6" placeholder="请输入6位验证码" aria-label="谷歌验证码"></div>`;
+  if(curTab==='question') h=`<p class="hint">请选择密保问题并输入答案</p><select id="vQ" aria-label="密保问题"><option value="">请选择密保问题</option><option>您出生的城市是？</option><option>您小学的名字是？</option><option>您最喜欢的电影是？</option></select><div class="fld"><input id="vAns" maxlength="50" placeholder="请输入密保答案" aria-label="密保答案"></div>`;
+  $('vPane').innerHTML=h;
+  if($('vSend')){$('vSend').disabled=cd>0;$('vSend').onclick=sendCode}
+  ['vCode','vAns','vQ'].forEach(i=>{if($(i)){$(i).oninput=$(i).onchange=()=>{if(i==='vCode')$(i).value=$(i).value.replace(/\D/g,'');$('vErr').textContent='';checkOk()}}});
+  checkOk();
+}
+function checkOk(){let ok=false;
+  if(curTab==='question') ok=$('vQ').value&&$('vAns').value.trim(); else ok=$('vCode')&&$('vCode').value.length===6;
+  $('vOk').disabled=!ok}
+function sendCode(){codeSent=true;cd=60;log('发送短信验证码至 138****8888');tick();clearInterval(timer);timer=setInterval(tick,1000)}
+function tick(){if(curTab!=='sms'||!$('vSend')){return}$('vSend').textContent=cd>0?`重新发送(${cd}s)`:'重新发送';$('vSend').disabled=cd>0;if(cd<=0){clearInterval(timer);return}cd--}
+$('vOk').onclick=()=>{
+  let pass=false;
+  if(curTab==='sms'){if(!codeSent){$('vErr').textContent='请先获取验证码';return}pass=$('vCode').value==='123456'}
+  if(curTab==='google') pass=$('vCode').value==='123456';
+  if(curTab==='question') pass=$('vQ').value==='您出生的城市是？'&&$('vAns').value.trim()==='北京';
+  if(!pass){
+    fails[curTab]++; const left=5-fails[curTab];
+    const msg={sms:'验证码错误',google:'谷歌验证码错误',question:'密保问题或答案错误'}[curTab];
+    log(`${M[curTab].name}失败（第 ${fails[curTab]} 次）`);
+    if(left<=0){lockedUntil=Date.now()+30*60e3;closeAll();pToast('验证失败次数过多，请30分钟后再试或联系客服',true,3200);log('连续失败 5 次，锁定提现两步验证 30 分钟');return}
+    $('vErr').textContent=`${msg}，还可尝试 ${left} 次`;return}
+  fails[curTab]=0; log(`${M[curTab].name}通过`); closeAll();
+  doSubmit(parseFloat($('amt').value),true);
+};
+$('vClose').onclick=()=>{closeAll();log('关闭安全验证弹窗，未提交提现（已填金额保留）')};
+
+/* ---------- 未绑定引导 + 安全中心 ---------- */
+let guideItems=[];
+function openGuide(items){$('pToast').hidden=true;guideItems=items;$('gChips').innerHTML=items.map(k=>`<span>${M[k].bind}</span>`).join('');$('mGuide').hidden=false;log(`会员未绑定任何可用验证方式，弹出「请先绑定」引导：${items.map(k=>M[k].bind).join('、')}`)}
+$('gCancel').onclick=()=>{closeAll();log('引导框点「暂不提现」，停留提现页')};
+$('gGo').onclick=()=>{closeAll();fromGuide=true;show('sSc');renderSc();log('点击「去绑定」跳转安全中心，可绑定项高亮')};
+function renderSc(){
+  const st={rPhone:[mem.phone,'已开启','未开启'],rGoogle:[mem.google,'已绑定','未绑定'],rQ:[mem.question,'已设置','未设置']};
+  const map={rPhone:'sms',rGoogle:'google',rQ:'question'};
+  for(const id in st){const [b,y,n]=st[id];const r=$(id);const hl=fromGuide&&!b&&guideItems.includes(map[id]);
+    r.classList.toggle('hl',hl);
+    r.querySelector('.nm').innerHTML=r.querySelector('.nm').textContent.replace(/去绑定/,'')+(b?'':'<span class="dot"></span>');
+    r.querySelector('.st').className='st'+(b?' y':'');
+    r.querySelector('.st').innerHTML=(b?y:n)+(hl?'<span class="go">去绑定</span>':'');}
+  document.querySelectorAll('#sSc .grp .row .st')[3].textContent='';
+  $('scTip').hidden=!fromGuide;
+  $('backWd').hidden=!(fromGuide&&guideItems.some(bound));
+}
+['rPhone','rGoogle','rQ'].forEach(id=>$(id).onclick=()=>{
+  const k={rPhone:'phone',rGoogle:'google',rQ:'question'}[id];
+  if(mem[k]){pToast('已绑定（原型不演示修改流程）');return}
+  if(k==='phone'&&!mem.smsCh){pToast('短信服务暂不可用，请联系客服',true);return}
+  mem[k]=true;$({phone:'mPhone',google:'mGoogle',question:'mQ'}[k]).checked=true;
+  renderSc();renderVerdict();pToast(`${M[{phone:'sms',google:'google',question:'question'}[k]].bind}绑定成功`);
+  log(`安全中心完成绑定：${M[{phone:'sms',google:'google',question:'question'}[k]].bind}（绑定流程沿用现有页面，原型简化为一键）`);
+});
+function backToWd(){show('sWd');if(fromGuide)log('返回提现页，金额保留，需重新输入提现密码');fromGuide=false;$('pwd').value='';renderPwd();renderSc()}
+$('backWdBtn').onclick=backToWd; $('scBack').onclick=backToWd;
+
+function renderAll(){bindSim();renderCfg();renderPwd();renderSc();renderVerdict()}
+renderAll();
+</script>
