@@ -228,11 +228,11 @@ input:focus-visible~.stage label{outline:none}
             <label class="rd" for="t3"><span class="dot"></span>每月次数<em>(本月第N笔充值)</em></label>
           </div>
           <div class="hint">
-            <span class="x0">按会员注册后的累计充值笔序判定，不重置；每个会员活动期间只能领 1 次（取最高档）。</span>
-            <span class="x4">从活动开始时间起计笔序，活动开始前的充值不计，不重置；每个会员活动期间只能领 1 次（取最高档）。本需求上线前创建的活动默认为此类型。</span>
-            <span class="x1">按自然日计数，每日 00:00（UTC+8）重置笔序；每日可领 1 次（取当日最高档）。</span>
-            <span class="x2">按自然周计数，每周一 00:00（UTC+8）重置笔序；每周可领 1 次（取本周最高档）。</span>
-            <span class="x3">按自然月计数，每月 1 日 00:00（UTC+8）重置笔序；每月可领 1 次（取本月最高档）。</span>
+            <span class="x0">按会员注册后的累计充值笔序判定，不重置；同一笔只取最高一档，不同笔可分别领取；活动期间不重置。</span>
+            <span class="x4">从活动开始时间起计笔序，活动开始前的充值不计，不重置；同一笔只取最高一档，不同笔可分别领取；活动期间不重置。本需求上线前创建的活动默认为此类型。</span>
+            <span class="x1">按自然日计数，每日 00:00（UTC+8）重置笔序；每日每一笔取最高一档，不同笔可分别领取。</span>
+            <span class="x2">按自然周计数，每周一 00:00（UTC+8）重置笔序；每周每一笔取最高一档，不同笔可分别领取。</span>
+            <span class="x3">按自然月计数，每月 1 日 00:00（UTC+8）重置笔序；每月每一笔取最高一档，不同笔可分别领取。</span>
           </div>
         </div></div></div>
 
@@ -275,7 +275,7 @@ input:focus-visible~.stage label{outline:none}
         </table></div>
         <div class="hint"><span class="lnk">＋ 添加梯度</span>　充值笔数手动输入正整数（≥1，不设上限）；<span class="only-cnt">笔序含义随「充值次数类型」变化（如每日次数下「第2笔」=当日第2笔）。</span></div>
       </div></div>
-      <div class="row"><div class="k">领取次数</div><div class="v"><span class="inp ro">领取最高一档</span><div class="hint">充值次数活动固定为最高一档，不可改。</div></div></div>
+      <div class="row"><div class="k">领取次数</div><div class="v"><span class="inp ro">同一笔领取最高一档</span><div class="hint">固定规则，不可改：同一笔（如都是第1笔）的多个档位只发达成的最高一档；不同笔之间可分别领取。示例：第1笔充25、第2笔充45 → 领 20.00 + 40.00。</div></div></div>
       <div class="row"><div class="k"><i>*</i>过期天数</div><div class="v"><span class="inp">6</span></div></div>
       <div class="omit">…稽核方式 / 稽核倍数 / 申领终端 等现有配置，此处省略</div>
       <div class="row" id="rulerow"><div class="k"><i>*</i>规则说明</div><div class="v">
@@ -287,11 +287,11 @@ input:focus-visible~.stage label{outline:none}
           <div class="sysbox">
             <div class="sys-h"><span>简体中文</span><span class="lang">English</span><em>只读预览，按当前配置自动生成</em></div>
             <ol class="sysrule">
-              <li class="r1 q0">活动期间，会员<mark>按注册后的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-              <li class="r1 q4">活动期间，会员<mark>按活动期间的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-              <li class="r1 q1">活动期间，会员<mark>每日按当日充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-              <li class="r1 q2">活动期间，会员<mark>每周按本周充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-              <li class="r1 q3">活动期间，会员<mark>每月按本月充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+              <li class="r1 q0">活动期间，会员<mark>按注册后的充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+              <li class="r1 q4">活动期间，会员<mark>按活动期间的充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+              <li class="r1 q1">活动期间，会员<mark>每日按当日充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+              <li class="r1 q2">活动期间，会员<mark>每周按本周充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+              <li class="r1 q3">活动期间，会员<mark>每月按本月充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
               <li>任意方式充值都可获得奖励，充值成功后，可前往活动详情或者待领取页面进行查看，若未查看到奖励，可尝试点击刷新或等待几分钟后再试</li>
               <li class="r3 k-n">获得的奖励 <mark>次日10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
               <li class="r3 k-r">获得的奖励 <mark>实时领取</mark>，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
@@ -335,11 +335,11 @@ input:focus-visible~.stage label{outline:none}
       </div>
       <div class="rules"><span class="badge">活动说明</span>
         <ol>
-          <li class="r1 q0">活动期间，会员<mark>按注册后的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-              <li class="r1 q4">活动期间，会员<mark>按活动期间的充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-          <li class="r1 q1">活动期间，会员<mark>每日按当日充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-          <li class="r1 q2">活动期间，会员<mark>每周按本周充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
-          <li class="r1 q3">活动期间，会员<mark>每月按本月充值笔序</mark>满足活动配置条件，可获得对应奖励，最高奖励40.00</li>
+          <li class="r1 q0">活动期间，会员<mark>按注册后的充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+              <li class="r1 q4">活动期间，会员<mark>按活动期间的充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+          <li class="r1 q1">活动期间，会员<mark>每日按当日充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+          <li class="r1 q2">活动期间，会员<mark>每周按本周充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
+          <li class="r1 q3">活动期间，会员<mark>每月按本月充值笔序</mark>满足活动配置条件，可获得对应奖励，<mark>同一笔仅奖励达成的最高一档，不同笔可分别领取</mark>，最高奖励60.00</li>
           <li>任意方式充值都可获得奖励，充值成功后，可前往活动详情或者待领取页面进行查看，若未查看到奖励，可尝试点击刷新或等待几分钟后再试</li>
           <li class="r3 k-n">获得的奖励 <mark>次日10:00:00以后</mark>可领取，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
           <li class="r3 k-r">获得的奖励 <mark>实时领取</mark>，仅限在 Android_APP、iOS_APP、PC、Android_H5、iOS_H5 端手动领取</li>
@@ -377,18 +377,18 @@ input:focus-visible~.stage label{outline:none}
 <section class="matrix" aria-label="规则矩阵">
   <h2>充值次数类型 · 规则矩阵</h2>
   <div class="tbl-w"><table>
-    <thead><tr><th>类型</th><th>笔序计数范围</th><th>重置时间（UTC+8）</th><th>每周期可领</th><th>领取时间可选项</th><th>前台副标题（简中）</th><th>进度前缀</th></tr></thead>
+    <thead><tr><th>类型</th><th>笔序计数范围</th><th>重置时间（UTC+8）</th><th>可领次数</th><th>领取时间可选项</th><th>前台副标题（简中）</th><th>进度前缀</th></tr></thead>
     <tbody>
-      <tr class="m0"><td>总次数（新建默认）</td><td>会员注册后全部成功充值</td><td>不重置</td><td>活动期间 1 次</td><td>实时领取 / 次日领取</td><td>按注册后充值次数奖励</td><td>无</td></tr>
-      <tr class="m4"><td>活动期间次数（存量默认）</td><td>活动开始后全部成功充值，活动前不计</td><td>不重置</td><td>活动期间 1 次</td><td>实时领取 / 次日领取</td><td>按活动期间充值次数奖励</td><td>无</td></tr>
-      <tr class="m1"><td>每日次数</td><td>当日 00:00:00–23:59:59 成功充值</td><td>每日 00:00</td><td>每日 1 次</td><td>次日 / 实时 / 每日</td><td>按每日充值次数奖励，每日00:00重置</td><td>今日</td></tr>
-      <tr class="m2"><td>每周次数</td><td>周一 00:00 – 周日 23:59:59</td><td>每周一 00:00</td><td>每周 1 次</td><td>次日 / 实时 / 每日 / 下周 / 每周</td><td>按每周充值次数奖励，每周一00:00重置</td><td>本周</td></tr>
-      <tr class="m3"><td>每月次数</td><td>1 日 00:00 – 月末 23:59:59</td><td>每月 1 日 00:00</td><td>每月 1 次</td><td>次日 / 实时 / 每日 / 下月 / 每月</td><td>按每月充值次数奖励，每月1日00:00重置</td><td>本月</td></tr>
+      <tr class="m0"><td>总次数（新建默认）</td><td>会员注册后全部成功充值</td><td>不重置</td><td>活动期间每笔 1 次</td><td>实时领取 / 次日领取</td><td>按注册后充值次数奖励</td><td>无</td></tr>
+      <tr class="m4"><td>活动期间次数（存量默认）</td><td>活动开始后全部成功充值，活动前不计</td><td>不重置</td><td>活动期间每笔 1 次</td><td>实时领取 / 次日领取</td><td>按活动期间充值次数奖励</td><td>无</td></tr>
+      <tr class="m1"><td>每日次数</td><td>当日 00:00:00–23:59:59 成功充值</td><td>每日 00:00</td><td>每日每笔 1 次</td><td>次日 / 实时 / 每日</td><td>按每日充值次数奖励，每日00:00重置</td><td>今日</td></tr>
+      <tr class="m2"><td>每周次数</td><td>周一 00:00 – 周日 23:59:59</td><td>每周一 00:00</td><td>每周每笔 1 次</td><td>次日 / 实时 / 每日 / 下周 / 每周</td><td>按每周充值次数奖励，每周一00:00重置</td><td>本周</td></tr>
+      <tr class="m3"><td>每月次数</td><td>1 日 00:00 – 月末 23:59:59</td><td>每月 1 日 00:00</td><td>每月每笔 1 次</td><td>次日 / 实时 / 每日 / 下月 / 每月</td><td>按每月充值次数奖励，每月1日00:00重置</td><td>本月</td></tr>
     </tbody>
   </table></div>
   <ul class="notes">
     <li>笔序按「充值成功（到账）时间」排序，按币种分别计数；退款不影响已达标结果。</li>
-    <li>判定口径不变：恰好第 N 笔的单笔金额 ≥ M 才达标；同一周期内所有达标档跨 N 比较，只取门槛最高的一档；未领取前可升档，已领取后本周期不再发放。</li>
+    <li>判定口径不变：恰好第 N 笔的单笔金额 ≥ M 才达标；同一周期内，同一笔（相同 N）的多个达标档只取门槛最高的一档；不同 N 之间各自发放、可重复领取。</li>
     <li>笔序按类型对应的范围计数（总次数=注册后，日/周/月=自然周期），包含活动开始前的充值；但只有发生在活动时间内的那一笔可以达标。活动期间次数从活动开始计笔序，活动前充值不计；本需求上线前创建的活动默认为活动期间次数。</li>
   </ul>
 </section>
