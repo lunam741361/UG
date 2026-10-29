@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>会员基本信息设置</title>
+<style>
+:root{--main:#1f6dff;--bar:#1565d8;--t1:#303133;--t2:#606266;--t3:#909399;--dis:#c0c4cc;--bd:#dcdfe6;--bd2:#ebeef5;--bg:#f5f7fa;--ok:#13ce66}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;font:12px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",Arial;color:var(--t1);min-width:1280px}
+.top{height:48px;background:var(--bar);color:#fff;display:flex;align-items:center;padding:0 16px}
+.logo{border:1px solid #fff;padding:2px 8px;font-size:11px;background:#fff;color:var(--bar);font-weight:600}
+.brand{margin:0 40px 0 12px;font-weight:600;font-size:13px}
+.nav{display:flex;height:48px}
+.nav span{width:53px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;gap:2px}
+.nav span i{width:14px;height:12px;border-radius:2px;background:rgba(255,255,255,.85)}
+.nav span.on{background:rgba(255,255,255,.18)}
+.top .r{margin-left:auto;display:flex;gap:14px;align-items:center}
+.tz{border:1px solid rgba(255,255,255,.5);border-radius:3px;padding:1px 8px;font-size:11px}
+.tabs{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--bd2)}
+.tabs span{border:1px solid var(--bd);border-radius:3px;padding:1px 8px;color:var(--t2);font-size:11px}
+.tabs span.on{border-color:var(--main);color:var(--main)}
+.crumb{padding:10px 20px;border-bottom:1px solid var(--bd2);color:var(--t2)}
+.crumb b{font-weight:400;color:var(--main)}
+.wrap{padding:0 38px 30px}
+.sub{display:flex;gap:26px;border-bottom:2px solid var(--bd2);padding-top:16px;align-items:flex-end}
+.sub span{padding:0 0 8px;color:var(--t1);cursor:pointer}
+.sub span.on{color:var(--main);border-bottom:2px solid var(--main);margin-bottom:-2px}
+.sub .help{margin-left:auto;color:var(--main)}
+.body{display:flex;gap:14px;margin-top:12px}
+.side{width:170px;border-right:1px solid var(--bd2);padding-right:6px}
+.side div{padding:5px 10px;border-radius:3px;color:var(--t2);margin-bottom:6px;cursor:pointer}
+.side div.on{background:#ecf5ff;color:var(--main)}
+.main{flex:1}
+.card{border:1px solid var(--bd2);border-radius:3px;margin-bottom:14px}
+.ch{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--bd2);font-size:14px;font-weight:600}
+.ch .btns{margin-left:auto;display:flex;gap:8px}
+.btn{border:1px solid var(--bd);background:#fff;color:var(--t2);padding:2px 12px;border-radius:3px;font-size:11px;cursor:pointer}
+.btn.p{background:var(--main);border-color:var(--main);color:#fff}
+.cb-body{padding:14px 0 10px}
+.row{display:flex;align-items:center;min-height:40px}
+.lbl{width:150px;text-align:right;padding-right:10px;color:var(--t1);display:flex;justify-content:flex-end;align-items:center;gap:4px}
+.subrow{padding-left:150px;min-height:32px;display:flex;align-items:center;margin-bottom:6px}
+.sw{display:inline-block;width:32px;height:16px;border-radius:8px;background:#dcdfe6;position:relative;cursor:pointer;transition:.2s}
+.sw i{position:absolute;left:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:var(--main)}.sw.on i{left:18px}
+.sw.dis{cursor:not-allowed;opacity:.55}
+.cb{display:inline-flex;align-items:center;gap:5px;color:var(--t2);cursor:pointer}
+.cb input{margin:0;accent-color:var(--main)}
+.cb.dis{color:var(--dis);cursor:not-allowed}
+.cb.ck:not(.dis){color:var(--main)}
+.q{display:inline-flex;width:12px;height:12px;border-radius:50%;background:var(--t3);color:#fff;font-size:9px;align-items:center;justify-content:center;cursor:help;position:relative;margin-left:4px}
+.q:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:240px;background:#303133;color:#fff;padding:7px 10px;border-radius:4px;font-size:12px;line-height:1.6;z-index:30;text-align:left;font-weight:400}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100}
+.mask.on{display:flex}
+.dlg{background:#fff;width:400px;border-radius:4px}
+.dlg .h{padding:14px 18px;font-size:15px}
+.dlg .b{padding:4px 18px 20px;color:var(--t2);font-size:13px}
+.dlg .f{padding:0 18px 16px;display:flex;justify-content:flex-end;gap:8px}
+.ph{border:1px dashed var(--bd);padding:80px;text-align:center;color:var(--t3);font-size:16px;margin-top:12px}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#f0f9eb;border:1px solid #e1f3d8;color:#67c23a;padding:8px 18px;border-radius:4px;display:none;z-index:120;font-size:13px}
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="logo">logo 500×100px</span><span class="brand">QA品牌回归</span>
+  <div class="nav"><span><i></i>仪表盘</span><span><i></i>运营</span><span><i></i>游戏</span><span class="on"><i></i>会员</span><span><i></i>代理</span><span><i></i>优惠</span><span><i></i>财务</span><span><i></i>报表</span><span><i></i>风控</span><span><i></i>系统</span></div>
+  <div class="r"><span class="tz">时区：UTC+08:00</span><b>Tavin</b></div>
+</div>
+<div class="tabs"><span>仪表盘</span><span>所有会员</span><span class="on">注册和验证</span><span>账变记录</span><span>活动中心</span></div>
+<div class="crumb">会员 / <b>注册和验证</b></div>
+<div class="wrap">
+  <div class="sub" id="sub"></div>
+  <div id="ph" class="ph" style="display:none"></div>
+  <div class="body" id="page">
+    <div class="side"><div class="on" onclick="jump(this,'c1')">会员基本信息展示项目</div><div onclick="jump(this,'c2')">个人信息</div></div>
+    <div class="main">
+      <div class="card" id="c1"><div class="ch">会员基本信息展示项目<span class="q" data-tip="开关控制前端个人资料页是否展示该项：开启展示，关闭不展示。不影响注册页，不影响后台已填写信息的储存和展示。">?</span><div class="btns" id="b1"></div></div><div class="cb-body" id="g1"></div></div>
+      <div class="card" id="c2"><div class="ch">个人信息<span class="q" data-tip="开关控制前端个人资料页是否展示该项：开启展示，关闭不展示。不影响注册页，不影响后台已填写信息的储存和展示。">?</span><div class="btns" id="b2"></div></div><div class="cb-body" id="g2"></div></div>
+    </div>
+  </div>
+</div>
+<div class="mask" id="mask"><div class="dlg"><div class="h">温馨提示</div><div class="b">⚠️ 您有正在编辑的内容，是否确认关闭?</div><div class="f"><button class="btn" onclick="closeM()">取消</button><button class="btn p" id="mok">确认</button></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const SUBS=['登录/注册配置','安全中心配置','短信配置','会员基本信息设置','防刷风控'];let cur=3;
+function rSub(){document.getElementById('sub').innerHTML=SUBS.map((s,i)=>`<span class="${i===cur?'on':''}" onclick="go(${i})">${s}</span>`).join('')+'<span class="help">ⓘ操作教程</span>';
+  const ph=document.getElementById('ph');document.getElementById('page').style.display=cur===3?'flex':'none';ph.style.display=cur===3?'none':'block';ph.textContent=SUBS[cur];}
+function go(i){cur=i;rSub();}
+function jump(el,id){document.querySelectorAll('.side div').forEach(d=>d.classList.toggle('on',d===el));document.getElementById(id).scrollIntoView({behavior:'smooth'});}
+let st={
+  g1:[['微信',0],['WhatsApp',0],['Facebook',1],['Telegram',1],['Zalo',0],['Line',0],['X(Twitter)',0],['Threads',0],['Instagram',0],['手机号',1],['注册时间',0]].map(a=>({k:a[0],on:a[1]})),
+  g2:{name:{on:1,wd:0},fields:[['国籍/地区',0],['出生地',1],['当前居住地',0],['永久居住地',0],['雇主名称',0],['工作性质',0],['收入来源',0]].map(a=>({k:a[0],on:a[1]}))}
+};
+let edit={g1:false,g2:false},snap={};
+const WD='勾选后，会员申请提现时若未填写真实姓名，需先完善真实姓名才能提现';
+function sw(g,on,fn){return `<span class="sw ${on?'on':''} ${edit[g]?'':'dis'}" onclick="${edit[g]?fn:''}"><i></i></span>`;}
+function render(){
+  document.getElementById('g1').innerHTML=st.g1.map((it,i)=>`<div class="row"><div class="lbl">${it.k}</div>${sw('g1',it.on,`st.g1[${i}].on^=1;render()`)}</div>`).join('');
+  const n=st.g2.name,cbDis=!edit.g2||!n.on;
+  let h=`<div class="row"><div class="lbl">真实姓名</div>${sw('g2',n.on,`st.g2.name.on^=1;if(!st.g2.name.on)st.g2.name.wd=0;render()`)}</div>
+  <div class="subrow"><label class="cb ${cbDis?'dis':''} ${n.wd?'ck':''}"><input type="checkbox" ${n.wd?'checked':''} ${cbDis?'disabled':''} onchange="st.g2.name.wd=this.checked?1:0;render()">提现时才检查是否绑定</label><span class="q" data-tip="${WD}">?</span></div>`;
+  h+=st.g2.fields.map((f,i)=>`<div class="row"><div class="lbl">${f.k}</div>${sw('g2',f.on,`st.g2.fields[${i}].on^=1;render()`)}</div>`).join('');
+  document.getElementById('g2').innerHTML=h;
+  ['g1','g2'].forEach((g,i)=>document.getElementById('b'+(i+1)).innerHTML=edit[g]?`<button class="btn" onclick="cancel('${g}')">取消</button><button class="btn p" onclick="save('${g}')">保存</button>`:`<button class="btn p" onclick="start('${g}')">修改</button>`);
+}
+function start(g){snap[g]=JSON.stringify(st[g]);edit[g]=true;render();}
+function cancel(g){if(JSON.stringify(st[g])===snap[g]){edit[g]=false;render();return;}
+  document.getElementById('mask').classList.add('on');document.getElementById('mok').onclick=()=>{closeM();st[g]=JSON.parse(snap[g]);edit[g]=false;render();};}
+function closeM(){document.getElementById('mask').classList.remove('on');}
+function save(g){edit[g]=false;render();const t=document.getElementById('toast');t.textContent='保存成功';t.style.display='block';setTimeout(()=>t.style.display='none',2000);}
+rSub();render();
+</script>
+</body>
+</html>
