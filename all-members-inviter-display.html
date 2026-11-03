@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>所有会员-邀请人展示原型</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f0f2f5;font:13px/1.5 -apple-system,"PingFang SC","Microsoft YaHei",Arial,sans-serif;color:#303133}
+button{font-family:inherit}
+.lnk{border:0;background:none;padding:0;color:#1f6dff;font-size:inherit;cursor:pointer}
+.lnk:hover{text-decoration:underline}
+a{color:#1f6dff;text-decoration:none}
+header{height:48px;background:#1b62d4;display:flex;align-items:stretch;justify-content:space-between;padding:0 16px;gap:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo span{background:#fff;color:#1b62d4;font-size:12px;font-weight:600;padding:3px 10px;border-radius:2px}
+.logo strong{color:#fff;font-size:14px;padding-right:60px;border-right:1px solid rgba(255,255,255,.3)}
+nav{display:flex;flex:1}
+.nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 16px;color:#fff;font-size:12px;position:relative}
+.nav.on{background:#3a7fe6}
+.bdg{position:absolute;top:4px;right:2px;background:#f56c6c;color:#fff;border-radius:8px;font-size:10px;line-height:14px;padding:0 4px}
+.hr{display:flex;align-items:center;gap:20px;color:#fff}
+.hr span{border:1px solid rgba(255,255,255,.5);border-radius:12px;padding:2px 10px;font-size:12px}
+.tagbar{background:#fff;padding:8px 12px;border-bottom:1px solid #e8eaec}
+.tagbar span{display:inline-block;border:1px solid #1f6dff;background:#ecf5ff;color:#1f6dff;padding:3px 8px;border-radius:3px;font-size:12px}
+.crumb{background:#fff;padding:12px 24px;border-bottom:1px solid #e8eaec;color:#606266}
+main{padding:20px;display:flex;flex-direction:column;gap:12px}
+.row{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.card{background:#fff;border-radius:6px}
+.filters{padding:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ipt{height:32px;border:1px solid #dcdfe6;border-radius:4px;padding:0 10px;font-size:13px;color:#606266;background:#fff;font-family:inherit}
+.btn{height:32px;border:1px solid #dcdfe6;border-radius:4px;padding:0 15px;font-size:13px;background:#fff;color:#303133;cursor:pointer}
+.btnp{background:#3d8cf5;border-color:#3d8cf5;color:#fff}
+.btnp:disabled{background:#a0cfff;border-color:#a0cfff;cursor:not-allowed}
+.seg{height:32px;border:1px solid #dcdfe6;background:#fff;color:#303133;padding:0 15px;font-size:13px;cursor:pointer;margin-left:-1px}
+.seg:first-child{border-radius:4px 0 0 4px;margin-left:0}.seg:last-child{border-radius:0 4px 4px 0}
+.seg.on{background:#1f6dff;border-color:#1f6dff;color:#fff;position:relative}
+.daterange{display:flex;align-items:center;gap:6px;border:1px solid #dcdfe6;border-radius:4px;padding:0 8px;height:32px;background:#fff}
+.daterange input{border:0;font-size:13px;color:#606266;font-family:inherit;width:130px}
+.dd{position:relative}
+.menu{position:absolute;top:38px;left:0;min-width:150px;background:#fff;border:1px solid #ebeef5;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.12);padding:6px 0;z-index:15;display:flex;flex-direction:column}
+.menu button{border:0;background:#fff;text-align:left;padding:0 16px;line-height:34px;color:#606266;font-size:13px;cursor:pointer;white-space:nowrap}
+.menu button:hover{background:#ecf5ff;color:#409eff}
+.tbl{overflow-x:auto}
+table.list{border-collapse:separate;border-spacing:0;width:100%;min-width:2300px}
+.th{background:#fff;font-weight:600;padding:12px 10px;border-bottom:1px solid #ebeef5;text-align:center;white-space:nowrap;line-height:18px}
+.th small{display:block;font-weight:400;color:#909399;font-size:11px}
+.td{padding:10px;border-bottom:1px solid #ebeef5;text-align:center;white-space:nowrap;font-size:12px;line-height:20px;background:#fff}
+.sub{color:#909399}
+.fixl{position:sticky;z-index:1}
+.fixr{position:sticky;right:0;z-index:1;box-shadow:-4px 0 6px rgba(0,0,0,.06)}
+.shl{box-shadow:4px 0 6px rgba(0,0,0,.06)}
+.new{background:#ecf5ff}
+th.newh{color:#1f6dff;border:2px solid #1f6dff;border-bottom:1px solid #ebeef5}
+td.newc{border-left:2px solid #1f6dff;border-right:2px solid #1f6dff}
+.v0{display:inline-block;border:1px solid #b7e4a6;background:#f0f9eb;color:#67c23a;border-radius:9px;font-size:11px;line-height:16px;padding:0 7px}
+.ok{display:inline-block;border:1px solid #c2e7b0;background:#f0f9eb;color:#67c23a;border-radius:3px;line-height:18px;padding:0 6px}
+.tg{display:inline-block;border:1px solid;border-radius:3px;font-size:11px;line-height:16px;padding:0 5px;margin:2px 2px 0 0}
+.cp{width:12px;height:12px;vertical-align:-1px;margin-left:4px;color:#1f6dff}
+.foot{padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.foot .l,.foot .r{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pg{min-width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dcdfe6;border-radius:3px;background:#fff}
+.pg.on{background:#1f6dff;border-color:#1f6dff;color:#fff}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;justify-content:center;align-items:flex-start;padding:40px 16px;overflow-y:auto}
+.dlg{background:#fff;border-radius:4px;width:760px;max-width:100%;display:flex;flex-direction:column;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.dlg-h{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 12px;font-size:18px}
+.dlg-b{padding:0 18px;max-height:calc(100vh - 220px);overflow-y:auto}
+.allrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0 14px;border-bottom:1px solid #ebeef5;margin-bottom:12px;position:sticky;top:0;background:#fff;z-index:1}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 16px}
+.ck{display:inline-flex;align-items:flex-start;gap:8px;border:0;background:none;padding:0;cursor:pointer;color:#606266;font-size:13px;line-height:18px;text-align:left}
+.ck .box{width:14px;height:14px;margin-top:2px;border:1px solid #dcdfe6;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;background:#fff;flex:none;color:#fff;font-size:11px;line-height:12px}
+.ck.on{color:#409eff}.ck.on .box,.ck.half .box{background:#409eff;border-color:#409eff}
+.cnt{color:#909399;margin-left:4px}
+.nb{background:#67c23a;color:#fff;border-radius:8px;padding:0 6px;font-size:10px;margin-left:4px}
+.dlg-f{padding:12px 18px 16px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid #ebeef5}
+.det{background:#fff;border-radius:4px;width:100%;max-width:1200px}
+.det-h{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #ebeef5;gap:12px;flex-wrap:wrap}
+.det-h .info{display:flex;gap:24px;flex-wrap:wrap}
+.tabs{display:flex;border-bottom:1px solid #ebeef5;padding:0 12px;overflow-x:auto}
+.dtab{border:0;background:none;padding:10px 14px;color:#606266;font-size:13px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+.dtab.on{color:#1f6dff;border-bottom-color:#1f6dff;font-weight:600}
+table.ov{border-collapse:collapse;width:100%;border-top:1px solid #ebeef5;border-left:1px solid #ebeef5;border-right:1px solid #ebeef5}
+.lb{width:150px;background:#f5f7fa;color:#606266;padding:10px 14px;border-bottom:1px solid #ebeef5;border-right:1px solid #ebeef5;text-align:right;white-space:nowrap;font-size:12px}
+.vl{padding:10px 14px;border-bottom:1px solid #ebeef5;font-size:12px}
+.op{margin-left:14px}
+tr.hl{background:#ecf5ff;outline:2px solid #1f6dff;outline-offset:-2px}
+tr.hl .lb{background:#e1edff;color:#1f6dff;font-weight:600}
+.tip{width:16px;height:16px;border-radius:50%;border:1px solid #909399;background:#fff;color:#909399;font-size:11px;line-height:14px;padding:0;margin-left:4px;cursor:help}
+.cpbtn{border:1px solid #909399;background:#fff;color:#909399;font-size:11px;border-radius:3px;padding:0 4px;cursor:pointer}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:30;padding:10px 18px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.1)}
+.toast.ok{background:#f0f9eb;border:1px solid #e1f3d8;color:#67c23a}
+.toast.warn{background:#fdf6ec;border:1px solid #faecd8;color:#e6a23c}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span>logo 500×100px</span><strong>QA品牌回归</strong></div>
+  <nav aria-label="主菜单">
+    <span class="nav">仪表盘</span><span class="nav">运营</span><span class="nav">游戏</span><span class="nav on">会员</span><span class="nav">代理</span>
+    <span class="nav">优惠<span class="bdg">69</span></span><span class="nav">财务<span class="bdg">36</span></span><span class="nav">报表</span><span class="nav">风控</span><span class="nav">系统</span>
+  </nav>
+  <div class="hr"><span>时区：UTC+08:00</span><strong>Tavin</strong></div>
+</header>
+<div class="tagbar"><span>所有会员 ⊗</span></div>
+<div class="crumb">会员 <span style="margin:0 6px;color:#c0c4cc">/</span> <span style="color:#303133">所有会员</span></div>
+<div id="app"></div>
+
+<script>
+var S='（需要输入安全码才能解密）';
+var GROUPS=[
+  {name:'会员基本信息',items:['币种','会员ID','会员账号','账号状态','状态备注','姓名','身份ID/CPF','生日','性别','VIP等级','会员层级','会员标签','账号余额','奖励钱包','利息宝余额','信用借款状态','借款金额','注册方式','登录方式','验证方式','会员备注','账号类型','语言','邀请人','顶层代理','上级代理']},
+  {name:'其他信息-登录统计',items:['累计登录次数','累计失败次数','在线时长','注册IP','注册IP地区','注册时间','注册来源','注册设备类型','注册设备系统','注册域名','注册设备号','注册指纹','最后登录IP','最后登录IP地区','最后登录时间','最后登录设备号','最后登录指纹','最后登录域名','最后登录设备类型','最后退出IP','最后退出IP地区','最后退出时间','最后退出设备号','最后退出指纹','最后退出设备类型']},
+  {name:'联系方式',items:['手机号缩略值','手机'+S,'邮箱缩略值','邮箱'+S,'微信缩略值','微信号'+S,'WhatsApp缩略值','WhatsApp'+S,'Facebook缩略值','Facebook'+S,'Telegram缩略值','Telegram'+S,'Zalo缩略值','Zalo'+S,'Line缩略值','Line'+S,'X(Twitter)缩略值','X(Twitter)'+S,'Threads缩略值','Threads'+S,'Instagram缩略值','Instagram'+S]},
+  {name:'财务信息',items:['最后充值时间','最后提现时间','充值次数','提现次数','单笔最大充值','累计充值金额','累计提现金额','利息宝累计已领取利息','是否首充','首充金额','首充时间','总充提差额']},
+  {name:'提现账号',items:['会员ID','会员账号','姓名','身份证类型','身份ID','币种','提现大类','提现方式','银行卡类型','提现账号/地址'+S,'开户行/IFSC/企业名称','银行编码类型','银行编码','后台备注','添加时间','操作时间']}
+];
+var NEWKEY='0:邀请人',ALLKEYS=[];
+GROUPS.forEach(function(g,gi){g.items.forEach(function(it){ALLKEYS.push(gi+':'+it);});});
+var Z=['zaccs1021','756'],A=['zac1103','832'];
+var MEMBERS=[
+  {id:'832',acct:'zac1103',inv:Z,top:Z,up:Z,bal:'19.00',way:'推广注册',time:'2026-11-03 05:27:10',src:'推广注册',login:'H5',ip:'210.123.101.171',area:'韩国, 城南',last:'2026-11-03 06:47:01'},
+  {id:'831',acct:'jerry12345',inv:null,top:null,up:null,bal:'0.00',way:'APP注册',time:'2026-11-02 18:04:35',src:'APP注册',login:'iOS',ip:'171.255.67.144',area:'越南, 河内',last:'2026-11-02 18:04:35'},
+  {id:'830',acct:'test1',inv:Z,top:Z,up:Z,bal:'0.00',way:'后台添加',time:'2026-11-02 15:50:01',src:'后台添加',login:'H5',ip:'118.101.203.72',area:'马来西亚, 吉隆坡',last:'2026-11-02 17:33:22'},
+  {id:'829',acct:'test5',inv:A,top:Z,up:A,bal:'0.00',way:'官网',time:'2026-11-02 15:34:31',src:'渠道(双十一渠道)',login:'H5',ip:'118.101.203.72',area:'马来西亚, 吉隆坡',last:'2026-11-02 15:34:32'},
+  {id:'828',acct:'test3',inv:null,top:Z,up:Z,bal:'0.00',way:'官网',time:'2026-11-02 14:52:28',src:'官网',login:'H5',ip:'118.101.203.72',area:'马来西亚, 吉隆坡',last:'2026-11-02 14:52:28'},
+  {id:'827',acct:'test2',inv:A,top:Z,up:Z,bal:'0.00',way:'推广注册',time:'2026-11-02 13:56:53',src:'推广注册',login:'H5',ip:'118.101.203.72',area:'马来西亚, 吉隆坡',last:'2026-11-02 13:56:54'},
+  {id:'826',acct:'i13837a',inv:null,top:null,up:null,bal:'0.00',way:'官网',time:'2026-11-01 13:59:03',src:'官网',login:'H5',ip:'13.251.119.198',area:'新加坡',last:'2026-11-01 14:07:30',tags:true},
+  {id:'825',acct:'zaccs',inv:null,top:null,up:null,bal:'0.00',way:'官网',time:'2026-10-30 13:30:24',src:'官网',login:'H5',ip:'210.123.101.171',area:'韩国, 城南',last:'2026-10-30 13:45:00'},
+  {id:'824',acct:'haT12311',inv:null,top:null,up:null,bal:'0.00',way:'APP注册',time:'2026-10-30 13:25:38',src:'APP注册',login:'iOS',ip:'219.95.152.166',area:'马来西亚, 岩桔巴辖',last:'2026-10-30 13:25:39',tags:true}
+];
+var EXTRA={'756':{id:'756',acct:'zaccs1021',inv:null,top:null,up:null,bal:'1,280.00',way:'后台添加',time:'2026-09-18 10:02:11',src:'后台添加',login:'H5',ip:'210.123.101.171',area:'韩国, 城南',last:'2026-11-03 08:12:40'}};
+var TODAY='2026-11-03';
+var CURRENCIES=['全部币种','CNY','AUD','USDT1','USDC1'];
+var TIMETYPES=['注册时间','最后登录时间','首充时间'];
+var COND_VALS={'会员层级':['预设层级','默认层级A'],'VIP等级':['VIP0','VIP1','VIP2','VIP3'],'会员标签':['已使用过钱包提现用户','测试','首存','好人','坏人','好坏人','坏好人'],'在线状态':['在线','离线','疑似机器人'],'账号状态':['正常','手动冻结','禁止提现','禁止进入游戏','禁止领取优惠','黑名单','异常冻结','停用','劝退'],'登录记录':['有登录记录','无登录记录']};
+var STYPES=['精准会员账号','模糊会员账号','会员ID','精准姓名','模糊姓名','精准提现账号/地址','模糊提现账号/地址','手机号','邮箱','Whatsapp','Facebook','Telegram','Zalo','Line','NO钱包','X(Twitter)','Wechat','Threads','Instagram','邀请人ID','邀请人','上级代理ID','上级代理','顶层代理ID','顶层代理','俱乐部ID','PIX类型','PIX地址','身份ID','注册IP','注册域名','注册来源','注册设备','注册设备号','最后登录IP','最后登录域名','最后登录设备','最后登录设备号','同关联账号'];
+var BATCH=['批量恢复正常','批量冻结','批量禁止提现','批量禁止进入游戏','批量禁止领取优惠','批量加入黑名单','批量踢线','批量恢复自我禁止-不限制','批量修改会员备注','批量修改标签','批量修改层级','批量修改上级','批量修改登录密码','批量强制要求改登录密码','批量验证CPF','批量劝退','批量删除会员'];
+var STYPE_FIELD={'精准会员账号':['acct','eq'],'模糊会员账号':['acct','like'],'会员ID':['id','eq'],'邀请人':['inv0','eq'],'邀请人ID':['inv1','eq'],'上级代理':['up0','eq'],'上级代理ID':['up1','eq'],'顶层代理':['top0','eq'],'顶层代理ID':['top1','eq'],'注册来源':['src','like'],'注册IP':['ip','eq'],'最后登录IP':['ip','eq']};
+var TABS=['会员概览','联系方式','个人资料','提现账号','账户交易','投注统计','会员消息','会员日志','登录设备','账号同关联'];
+
+function blank(){return {cur:'全部币种',timeType:'注册时间',seg:'',start:'',end:'',cond:'',condVal:'',stype:'精准会员账号',kw:''};}
+function allSel(){var o={};ALLKEYS.forEach(function(k){o[k]=true;});return o;}
+var st=Object.assign(blank(),{applied:blank(),sel:{},allResults:false,menuOpen:false,dlg:'',fsel:allSel(),sec:'',detail:'',dtab:'会员概览'});
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+function find(id){for(var i=0;i<MEMBERS.length;i++)if(MEMBERS[i].id===id)return MEMBERS[i];return EXTRA[id]||null;}
+function opts(list,cur){return list.map(function(o){return '<option'+(o===cur?' selected':'')+'>'+esc(o)+'</option>';}).join('');}
+function agent(p,act){return p?'<button type="button" class="lnk" data-act="open" data-id="'+p[1]+'">'+esc(p[0])+'</button><div><button type="button" class="lnk" data-act="open" data-id="'+p[1]+'">('+p[1]+')</button></div>':'-';}
+var CP='<svg class="cp" viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor"><rect x="3.5" y="3.5" width="7" height="7"/><path d="M1.5 8.5v-7h7"/></svg>';
+var TAGS='<div style="text-align:left"><span class="tg" style="color:#f56c6c;border-color:#f56c6c">已使用过钱包提现用户</span><span class="tg" style="color:#1f6dff;border-color:#1f6dff">测试</span><span class="tg" style="color:#3c9a20;border-color:#67c23a">首存</span><span class="tg" style="color:#a87b00;border-color:#e6c200">好人</span><span class="tg" style="color:#303133;border-color:#303133">坏人</span></div>';
+
+function filtered(){
+  var a=st.applied;
+  return MEMBERS.filter(function(m){
+    if(a.cur!=='全部币种'&&a.cur!=='CNY')return false;
+    var t=a.timeType==='最后登录时间'?m.last:(a.timeType==='首充时间'?'':m.time);
+    if(a.start||a.end){if(!t)return false;var d=t.slice(0,10);if(a.start&&d<a.start)return false;if(a.end&&d>a.end)return false;}
+    if(a.cond&&a.condVal){var v=a.condVal;
+      if(a.cond==='会员层级'&&v!=='预设层级')return false;
+      if(a.cond==='VIP等级'&&v!=='VIP0')return false;
+      if(a.cond==='会员标签'&&!(m.tags&&['已使用过钱包提现用户','测试','首存','好人','坏人'].indexOf(v)>=0))return false;
+      if(a.cond==='在线状态'&&v!=='离线')return false;
+      if(a.cond==='账号状态'&&v!=='正常')return false;
+      if(a.cond==='登录记录'&&v!=='有登录记录')return false;}
+    var kw=(a.kw||'').trim(),rule=STYPE_FIELD[a.stype];
+    if(kw&&rule){
+      var val={acct:m.acct,id:m.id,src:m.src,ip:m.ip,inv0:m.inv?m.inv[0]:'',inv1:m.inv?m.inv[1]:'',up0:m.up?m.up[0]:'',up1:m.up?m.up[1]:'',top0:m.top?m.top[0]:'',top1:m.top?m.top[1]:''}[rule[0]]||'';
+      if(rule[1]==='eq'?val!==kw:val.indexOf(kw)<0)return false;}
+    return true;
+  });
+}
+function isFiltering(){var a=st.applied,b=blank();return Object.keys(b).some(function(k){return k!=='seg'&&a[k]!==b[k];});}
+function stateOf(keys){var n=keys.filter(function(k){return st.fsel[k];}).length;return n===keys.length?'on':n?'half':'';}
+function mark(s){return s==='on'?'✓':s==='half'?'–':'';}
+
+function render(){
+  var list=filtered(),total=isFiltering()?list.length:831;
+  var selN=Object.keys(st.sel).filter(function(k){return st.sel[k];}).length;
+  var selCount=st.allResults?total:selN;
+  var pageAll=list.length>0&&list.every(function(m){return st.sel[m.id];});
+  var h='<main>';
+  h+='<div class="row"><select class="ipt" style="width:150px" data-f="cur" aria-label="币种">'+opts(CURRENCIES,st.cur)+'</select>';
+  h+='<div class="row"><button class="btn btnp" type="button">+ 新增会员</button><button class="btn" type="button">导入 ▾</button>';
+  h+='<div class="dd"><button class="btn" type="button" data-act="menu" aria-haspopup="true" aria-expanded="'+st.menuOpen+'">导出报表 ▾</button>';
+  if(st.menuOpen)h+='<div class="menu" role="menu"><button type="button" role="menuitem" data-act="exp-sel">导出选中数据</button><button type="button" role="menuitem" data-act="exp-flt">导出筛选结果</button></div>';
+  h+='</div><a href="#" style="margin-left:4px">操作教程</a></div></div>';
+
+  h+='<div class="card filters"><select class="ipt" style="width:120px" data-f="timeType" aria-label="时间维度">'+opts(TIMETYPES,st.timeType)+'</select>';
+  h+='<div style="display:flex"><button type="button" class="seg'+(st.seg==='D'?' on':'')+'" data-act="seg" data-v="D">日</button><button type="button" class="seg'+(st.seg==='W'?' on':'')+'" data-act="seg" data-v="W">周</button><button type="button" class="seg'+(st.seg==='M'?' on':'')+'" data-act="seg" data-v="M">月</button></div>';
+  h+='<div class="daterange"><input type="date" aria-label="开始日期" data-f="start" value="'+st.start+'"><span style="color:#909399">至</span><input type="date" aria-label="结束日期" data-f="end" value="'+st.end+'"></div>';
+  h+='<select class="ipt" style="width:150px" data-f="cond" aria-label="搜索条件"><option value="">请选择搜索条件</option>'+opts(Object.keys(COND_VALS),st.cond)+'</select>';
+  if(st.cond)h+='<select class="ipt" style="width:160px" data-f="condVal" aria-label="'+st.cond+'"><option value="">请选择'+st.cond+'</option>'+opts(COND_VALS[st.cond],st.condVal)+'</select>';
+  h+='<select class="ipt" style="width:150px" data-f="stype" aria-label="搜索类型">'+opts(STYPES,st.stype)+'</select>';
+  h+='<input class="ipt" style="width:170px" data-f="kw" aria-label="搜索值" placeholder="请输入'+esc(st.stype)+'" value="'+esc(st.kw)+'">';
+  h+='<button class="btn btnp" type="button" data-act="search">搜索</button><button class="btn btnp" type="button">高级搜索</button><button class="btn" type="button" data-act="reset">重置</button></div>';
+
+  h+='<div class="card tbl"><table class="list"><thead><tr>';
+  h+='<th class="th fixl" style="left:0;width:36px"><input type="checkbox" aria-label="全选当前页" data-act="page"'+(pageAll?' checked':'')+'></th>';
+  h+='<th class="th fixl" style="left:56px;width:120px">会员ID</th><th class="th fixl shl" style="left:196px;width:160px">会员账号(层级)</th>';
+  h+='<th class="th">账号状态</th><th class="th">账号类型(会员级别)</th><th class="th">姓名</th><th class="th new newh">邀请人(ID)</th><th class="th">顶层代理(ID)</th><th class="th">上级代理(ID)</th><th class="th">币种</th>';
+  h+='<th class="th">总余额(含利息宝) ⇅</th><th class="th">总充值金额 ⇅<small>(充值次数)</small></th><th class="th">总提现金额 ⇅<small>(提现次数)</small></th><th class="th">总充提差额 ⇅<small>(首充金额)</small></th>';
+  h+='<th class="th">注册方式<small>(验证方式)</small></th><th class="th">注册时间 ⇅<small>(来源)</small></th><th class="th">登录方式</th><th class="th">注册设备系统 ⇅</th><th class="th">最后登录IP/地区最后登录时间</th><th class="th fixr" style="width:90px">操作</th></tr></thead><tbody>';
+  list.forEach(function(m){
+    var checked=st.sel[m.id]||st.allResults;
+    h+='<tr><td class="td fixl" style="left:0"><input type="checkbox" aria-label="选择 '+m.acct+'" data-act="row" data-id="'+m.id+'"'+(checked?' checked':'')+'></td>';
+    h+='<td class="td fixl" style="left:56px;text-align:left"><span class="v0">V0</span><div><button type="button" class="lnk" style="font-size:14px" data-act="open" data-id="'+m.id+'">'+m.id+'</button>'+CP+'</div></td>';
+    h+='<td class="td fixl shl" style="left:196px;white-space:normal;max-width:160px"><button type="button" class="lnk" style="font-size:14px" data-act="open" data-id="'+m.id+'">'+m.acct+'</button>'+CP+'<div class="sub">(预设层级)</div>'+(m.tags?TAGS:'')+'</td>';
+    h+='<td class="td"><span class="ok">正常</span></td><td class="td">正式账号<div class="sub">(VIP0)</div></td><td class="td">--</td>';
+    h+='<td class="td new newc">'+agent(m.inv)+'</td><td class="td">'+agent(m.top)+'</td><td class="td">'+agent(m.up)+'</td><td class="td">CNY</td>';
+    h+='<td class="td" style="text-align:right">'+m.bal+'</td><td class="td" style="color:#67c23a">0.00<span class="sub">(0)</span></td><td class="td" style="color:#67c23a">0.00<span class="sub">(0)</span></td><td class="td">0.00<div>0.00</div></td>';
+    h+='<td class="td">'+m.way+'<div class="sub">(密码)</div></td><td class="td">'+m.time+'<div class="sub">'+m.src+'</div></td><td class="td">'+m.login+'</td><td class="td">其他</td>';
+    h+='<td class="td">'+m.ip+'<div class="sub">'+m.area+'</div><div class="sub">'+m.last+'</div></td><td class="td fixr"><button type="button" class="lnk" data-act="open" data-id="'+m.id+'">详情</button></td></tr>';
+  });
+  if(!list.length)h+='<tr><td class="td" colspan="20" style="color:#909399;padding:40px 0 40px 600px;text-align:left">暂无数据</td></tr>';
+  h+='</tbody></table></div>';
+
+  h+='<div class="card foot"><div class="l"><label><input type="checkbox" data-act="page"'+(pageAll?' checked':'')+'> 全选当前页</label><label><input type="checkbox" data-act="allres"'+(st.allResults?' checked':'')+'> 全选所有结果</label>';
+  h+='<select class="ipt" style="width:150px" aria-label="批量操作"><option>批量操作</option>'+opts(BATCH,'')+'</select><span>已选择 '+selCount+' 条数据</span><button class="btn" type="button" data-act="exp-sel">导出报表</button></div>';
+  h+='<div class="r"><span class="pg" style="color:#c0c4cc">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">4</span><span class="pg">5</span><span class="pg">6</span><span class="pg">…</span><span class="pg">9</span><span class="pg">›</span>';
+  h+='<span style="margin-left:16px">前往</span><input class="ipt" aria-label="页码" value="1" style="width:56px;text-align:center"><span>页</span><span style="margin-left:12px">共 '+total+' 条</span>';
+  h+='<select class="ipt" style="width:120px" aria-label="每页条数"><option>20条/页</option><option>50条/页</option><option selected>100条/页</option><option>200条/页</option><option>500条/页</option></select></div></div>';
+  h+='</main>';
+
+  if(st.dlg){
+    var fCount=ALLKEYS.filter(function(k){return st.fsel[k];}).length,as=stateOf(ALLKEYS);
+    var needSec=ALLKEYS.some(function(k){return st.fsel[k]&&k.indexOf('安全码')>=0;});
+    var okDis=!(fCount>0&&(!needSec||st.sec.trim()!==''));
+    h+='<div class="mask" data-act="mask"><div class="dlg" role="dialog" aria-modal="true"><div class="dlg-h"><span>'+(st.dlg==='selected'?'导出选中数据':'导出筛选结果')+'</span><button type="button" class="lnk" aria-label="关闭" style="color:#909399;font-size:20px" data-act="close-dlg">×</button></div><div class="dlg-b">';
+    h+='<div class="allrow"><button type="button" class="ck '+as+'" data-act="f-all"><span class="box">'+mark(as)+'</span>全选</button><span style="color:#909399">已选 '+fCount+' / '+ALLKEYS.length+' 项</span></div>';
+    GROUPS.forEach(function(g,gi){
+      var keys=g.items.map(function(it){return gi+':'+it;}),gs=stateOf(keys);
+      h+='<div style="margin-bottom:20px"><div style="margin-bottom:12px"><button type="button" class="ck '+gs+'" data-act="f-grp" data-g="'+gi+'"><span class="box">'+mark(gs)+'</span>'+g.name+'<span class="cnt">（'+g.items.length+'个）</span></button></div><div class="grid">';
+      g.items.forEach(function(it){var k=gi+':'+it,on=!!st.fsel[k];
+        h+='<div><button type="button" class="ck'+(on?' on':'')+'" data-act="f-item" data-k="'+esc(k)+'"><span class="box">'+(on?'✓':'')+'</span><span>'+it+(k===NEWKEY?'<span class="nb">新增</span>':'')+'</span></button></div>';});
+      h+='</div></div>';
+    });
+    if(needSec)h+='<div style="display:flex;align-items:center;gap:12px;padding:10px 0 0"><label for="sec" style="width:56px;text-align:right;color:#606266;flex:none"><span style="color:#f56c6c">*</span> 安全码</label><input id="sec" class="ipt" style="flex:1" placeholder="请输入安全码" autocomplete="off" data-f="sec" value="'+esc(st.sec)+'"></div><div style="color:#f56c6c;padding:6px 0 10px 68px;font-size:12px">所选字段包含敏感信息，需要输入安全码才能解密，请慎重导出。</div>';
+    h+='</div><div class="dlg-f"><button class="btn" type="button" data-act="close-dlg">取消</button><button class="btn btnp" type="button" id="okbtn" data-act="confirm"'+(okDis?' disabled':'')+'>确定导出</button></div></div></div>';
+  }
+
+  var dm=st.detail?find(st.detail):null;
+  if(dm){
+    h+='<div class="mask" data-act="mask"><section class="det" role="dialog" aria-modal="true" aria-label="会员详情"><div class="det-h"><div class="info"><span>币种：<strong>CNY</strong></span><span>会员账号：<strong>'+dm.acct+'</strong> <button type="button" class="cpbtn">复制</button></span><span>会员ID：<strong>'+dm.id+'</strong> <button type="button" class="cpbtn">复制</button></span></div><button type="button" class="lnk" aria-label="关闭" style="font-size:20px;color:#909399" data-act="close-det">×</button></div>';
+    h+='<div class="tabs">'+TABS.map(function(t){return '<button type="button" class="dtab'+(t===st.dtab?' on':'')+'" data-act="tab" data-v="'+t+'">'+t+'</button>';}).join('')+'</div>';
+    if(st.dtab==='会员概览'){
+      var inv=dm.inv?'<button type="button" class="lnk" data-act="open" data-id="'+dm.inv[1]+'">'+dm.inv[0]+'</button> <span class="sub">('+dm.inv[1]+')</span>':'-';
+      var up=dm.up?'<button type="button" class="lnk" data-act="open" data-id="'+dm.up[1]+'">'+dm.up[0]+'</button> <span class="sub">('+dm.up[1]+')</span><a class="op" href="#">修改</a><a class="op" href="#" style="color:#f56c6c">解除</a>':'-<a class="op" href="#">修改</a>';
+      h+='<div style="padding:20px"><table class="ov"><tbody>';
+      h+='<tr><td class="lb">账号状态</td><td class="vl"><span style="color:#67c23a">正常</span><a class="op" href="#">修改状态</a></td></tr>';
+      h+='<tr><td class="lb">账号类型</td><td class="vl">正式账号</td></tr>';
+      h+='<tr><td class="lb">会员层级</td><td class="vl">预设层级<a class="op" href="#">修改层级</a></td></tr>';
+      h+='<tr><td class="lb">VIP等级</td><td class="vl"><span class="v0">V0</span><a class="op" href="#">修改VIP等级</a></td></tr>';
+      h+='<tr><td class="lb">会员标签</td><td class="vl">'+(dm.tags?'已使用过钱包提现用户、测试、首存、好人、坏人':'无')+'<a class="op" href="#">修改标签</a></td></tr>';
+      h+='<tr><td class="lb">总余额</td><td class="vl">'+dm.bal+'<a class="op" href="#">账变记录</a><a class="op" href="#">手动加款</a><a class="op" href="#">手动扣除</a></td></tr>';
+      h+='<tr><td class="lb">注册时间</td><td class="vl">'+dm.time+' <span class="sub">('+dm.src+')</span></td></tr>';
+      h+='<tr class="hl"><td class="lb">邀请人<button type="button" class="tip" title="会员账号创建时的上级代理（推广注册、代理开户、渠道链接、后台新增、导入）。账号创建后固定不变，之后修改、解除或新加上级代理都不影响邀请人。" aria-label="邀请人说明">?</button></td><td class="vl">'+inv+'</td></tr>';
+      h+='<tr><td class="lb">上级代理</td><td class="vl">'+up+'</td></tr>';
+      h+='<tr><td class="lb">代理佣金</td><td class="vl">累计佣金 0.00<a class="op" href="#">佣金管理</a></td></tr>';
+      h+='<tr><td class="lb">最后登录</td><td class="vl">'+dm.ip+' / '+dm.area+' <span class="sub">'+dm.last+'</span></td></tr>';
+      h+='<tr><td class="lb">登录方式</td><td class="vl">'+dm.login+'</td></tr>';
+      h+='<tr><td class="lb">备注</td><td class="vl">无<a class="op" href="#">修改备注</a></td></tr>';
+      h+='</tbody></table></div>';
+    } else {
+      h+='<div style="padding:80px 20px;text-align:center;color:#909399;font-size:16px">'+st.dtab+'</div>';
+    }
+    h+='</section></div>';
+  }
+  document.getElementById('app').innerHTML=h;
+}
+
+var toastTimer;
+function toast(msg,type){
+  var t=document.querySelector('.toast');
+  if(!t){t=document.createElement('div');document.body.appendChild(t);}
+  t.className='toast '+type;t.setAttribute('role','status');t.textContent=msg;t.style.display='block';
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.style.display='none';},2600);
+}
+function openExport(mode){
+  var total=isFiltering()?filtered().length:831;
+  var selN=Object.keys(st.sel).filter(function(k){return st.sel[k];}).length;
+  var selCount=st.allResults?total:selN;
+  st.menuOpen=false;
+  if(mode==='selected'&&!selCount){render();toast('请先勾选要导出的会员','warn');return;}
+  st.dlg=mode;st.fsel=allSel();st.sec='';render();
+}
+
+var app=document.getElementById('app');
+app.addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]');
+  if(!el){if(st.menuOpen){st.menuOpen=false;render();}return;}
+  var act=el.dataset.act;
+  if(act==='mask'){if(e.target===el){st.dlg='';st.detail='';render();}return;}
+  if(act!=='menu'&&act!=='exp-sel'&&act!=='exp-flt'&&st.menuOpen){st.menuOpen=false;}
+  switch(act){
+    case 'menu':st.menuOpen=!st.menuOpen;render();break;
+    case 'exp-sel':openExport('selected');break;
+    case 'exp-flt':openExport('filtered');break;
+    case 'seg':var v=el.dataset.v;st.seg=v;st.start=v==='D'?TODAY:v==='W'?'2026-11-02':'2026-11-01';st.end=TODAY;render();break;
+    case 'search':var a={};Object.keys(blank()).forEach(function(k){a[k]=st[k];});st.applied=a;st.sel={};st.allResults=false;render();break;
+    case 'reset':Object.assign(st,blank(),{applied:blank(),sel:{},allResults:false});render();break;
+    case 'row':st.sel[el.dataset.id]=!st.sel[el.dataset.id];st.allResults=false;render();break;
+    case 'page':var list=filtered(),all=list.length>0&&list.every(function(m){return st.sel[m.id];});list.forEach(function(m){st.sel[m.id]=!all;});st.allResults=false;render();break;
+    case 'allres':st.allResults=!st.allResults;render();break;
+    case 'open':st.detail=el.dataset.id;st.dtab='会员概览';render();break;
+    case 'close-det':st.detail='';render();break;
+    case 'tab':st.dtab=el.dataset.v;render();break;
+    case 'close-dlg':st.dlg='';render();break;
+    case 'f-all':var n=ALLKEYS.filter(function(k){return st.fsel[k];}).length;st.fsel=n===ALLKEYS.length?{}:allSel();render();break;
+    case 'f-grp':var gi=+el.dataset.g,keys=GROUPS[gi].items.map(function(it){return gi+':'+it;}),full=keys.every(function(k){return st.fsel[k];});keys.forEach(function(k){st.fsel[k]=!full;});render();break;
+    case 'f-item':st.fsel[el.dataset.k]=!st.fsel[el.dataset.k];render();break;
+    case 'confirm':st.dlg='';render();toast('导出任务已提交，请到「下载中心」查看','ok');break;
+    default:render();
+  }
+});
+app.addEventListener('change',function(e){
+  var f=e.target.dataset.f;if(!f||f==='kw'||f==='sec')return;
+  st[f]=e.target.value;
+  if(f==='start'||f==='end')st.seg='';
+  if(f==='cond')st.condVal='';
+  render();
+});
+app.addEventListener('input',function(e){
+  var f=e.target.dataset.f;
+  if(f==='kw'){st.kw=e.target.value;var ph=e.target;ph.placeholder='请输入'+st.stype;}
+  if(f==='sec'){st.sec=e.target.value;var ok=document.getElementById('okbtn');var fCount=ALLKEYS.filter(function(k){return st.fsel[k];}).length;ok.disabled=!(fCount>0&&st.sec.trim()!=='');}
+});
+app.addEventListener('keydown',function(e){if(e.target.dataset.f==='kw'&&e.key==='Enter'){e.preventDefault();app.querySelector('[data-act="search"]').click();}});
+render();
+</script>
+</body>
+</html>
