@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>所有会员-详情-会员概览 字段调整（原型）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",Arial,sans-serif;font-size:12px;color:#303133;background:#8a8f99}
+.bar{background:#1f2937;color:#e5e7eb;padding:10px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:sticky;top:0;z-index:50}
+.bar b{color:#fff;font-size:13px}
+.bar label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.bar .seg{display:flex;border:1px solid #4b5563;border-radius:4px;overflow:hidden}
+.bar .seg span{padding:4px 12px;cursor:pointer}
+.bar .seg span.on{background:#1f6dff;color:#fff}
+.legend{display:flex;gap:10px;margin-left:auto;align-items:center}
+.lg{display:inline-flex;align-items:center;gap:4px}
+.lg i{display:inline-block;width:12px;height:12px;border-radius:2px}
+
+.dlg{width:1180px;margin:24px auto 60px;background:#fff;border-radius:4px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.dh{display:flex;align-items:center;padding:16px 20px;font-size:15px;color:#606266}
+.dh .k{color:#909399}.dh .v{color:#303133;font-weight:600;margin-left:6px}
+.dh .sep{margin:0 12px;color:#dcdfe6}
+.cp{margin-left:8px;cursor:pointer;color:#909399;font-size:13px}
+.dh .x{margin-left:auto;font-size:20px;color:#909399;cursor:pointer}
+.tabs{display:flex;border-bottom:2px solid #e4e7ed;margin:0 20px;font-size:14px}
+.tabs span{padding:10px 16px;color:#303133;cursor:pointer;white-space:nowrap}
+.tabs span.on{color:#1f6dff;border-bottom:2px solid #1f6dff;margin-bottom:-2px}
+.body{padding:14px 20px 24px}
+table.ov{width:100%;border-collapse:collapse;border:1px solid #ebeef5;font-size:13px}
+table.ov td{border-bottom:1px solid #ebeef5;padding:10px 14px;vertical-align:top;line-height:22px}
+table.ov td.l{width:190px;background:#f5f7fa;color:#606266;border-right:1px solid #ebeef5}
+table.ov td.a{width:230px;text-align:right;white-space:nowrap}
+table.ov tr.gap td{background:#fafafa;color:#c0c4cc;text-align:center;padding:6px;font-size:12px}
+.mut{color:#909399}.sub{color:#909399;font-size:12px}
+.red{color:#f56c6c}
+a.lk{color:#1f6dff;text-decoration:none;cursor:pointer;margin-left:14px}
+a.lk:first-child{margin-left:0}
+a.lk.dis{color:#a0cfff;cursor:not-allowed}
+a.v{color:#1f6dff;text-decoration:none;cursor:pointer}
+.tag-ok{display:inline-block;background:#f0f9eb;color:#67c23a;border:1px solid #e1f3d8;padding:0 8px;border-radius:3px;line-height:20px}
+.mono{font-family:Consolas,Menlo,monospace;font-size:12.5px}
+.q{display:inline-flex;width:14px;height:14px;border-radius:50%;background:#1f6dff;color:#fff;font-size:10px;align-items:center;justify-content:center;margin-left:3px;cursor:help;vertical-align:-2px;font-weight:700}
+.tip{position:fixed;z-index:200;background:#fff;color:#606266;border:1px solid #ebeef5;box-shadow:0 2px 12px rgba(0,0,0,.12);padding:10px 12px;border-radius:4px;max-width:300px;font-size:12px;line-height:18px;pointer-events:none;display:none}
+.ipt{width:200px;height:30px;border:1px solid #dcdfe6;border-radius:4px;padding:0 10px;font-size:13px;outline:none;margin-top:6px;display:block}
+.ipt:focus{border-color:#1f6dff}
+
+/* 标注 */
+body.mk tr.new td{background:#fffbe6}
+body.mk tr.new td.l{background:#fff1b8}
+body.mk tr.chg td{background:#f0f7ff}
+body.mk tr.chg td.l{background:#d6e8ff}
+.badge{display:none;font-size:11px;padding:0 5px;border-radius:3px;margin-left:6px;line-height:16px;vertical-align:1px}
+body.mk .badge{display:inline-block}
+.badge.n{background:#faad14;color:#fff}.badge.c{background:#1f6dff;color:#fff}
+.no{display:none;width:18px;height:18px;border-radius:50%;background:#e5484d;color:#fff;font-size:11px;align-items:center;justify-content:center;margin-right:6px;font-weight:700}
+body.mk .no{display:inline-flex}
+
+/* 弹框 / 提示 */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;z-index:100;padding-top:160px}
+.mask.on{display:flex}
+.md{background:#fff;border-radius:4px;width:420px;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.mh{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;font-size:15px;color:#303133}
+.mh span.x{cursor:pointer;color:#909399;font-size:18px}
+.cf{padding:6px 24px 10px;line-height:22px;font-size:13px;color:#606266}
+.mf{display:flex;justify-content:flex-end;gap:10px;padding:10px 20px 18px}
+.btn{height:32px;padding:0 16px;border-radius:4px;border:1px solid #dcdfe6;background:#fff;cursor:pointer;font-size:13px;color:#606266}
+.btn.p{background:#1f6dff;border-color:#1f6dff;color:#fff}
+.msg{position:fixed;top:70px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:4px;display:none;z-index:300;font-size:13px}
+.msg.ok{background:#f0f9eb;border:1px solid #e1f3d8;color:#67c23a}
+.msg.err{background:#fef0f0;border:1px solid #fde2e2;color:#f56c6c}
+/* 占位页 */
+.phbody{height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#909399;font-size:18px;gap:10px;border:1px dashed #dcdfe6;border-radius:4px}
+.phbody small{font-size:13px}
+.ph{width:760px;background:#fff;border-radius:4px}
+.ph .pb{height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#909399;font-size:18px;border-top:1px solid #ebeef5;gap:10px}
+.ph .pb small{font-size:13px}
+</style>
+</head>
+<body class="mk">
+
+<div class="bar">
+  <b>原型：所有会员-详情-会员概览 字段调整</b>
+  <span>示例会员：</span>
+  <div class="seg" id="seg">
+    <span class="on" data-s="A">有上级代理（官网注册）</span>
+    <span data-s="B">无上级代理（后台添加）</span>
+  </div>
+  <label><input type="checkbox" id="mkChk" checked> 标注本期改动</label>
+  <div class="legend">
+    <span class="lg"><i style="background:#fff1b8"></i>新增</span>
+    <span class="lg"><i style="background:#d6e8ff"></i>调整</span>
+    <span style="color:#9ca3af">红色序号对应需求文档章节</span>
+  </div>
+</div>
+
+<div class="dlg">
+  <div class="dh">
+    <span class="k">币种:</span><span class="v">CNY</span><span class="sep">|</span>
+    <span class="k">会员账号:</span><span class="v mono" id="hAcc"></span><span class="cp">⧉</span><span class="sep">|</span>
+    <span class="k">会员ID:</span><span class="v" id="hId"></span><span class="cp">⧉</span>
+    <span class="x">×</span>
+  </div>
+  <div class="tabs" id="tabs">
+    <span class="on" data-t="ov">会员概览</span><span>联系方式(需安全码解密)</span><span>个人资料</span><span>提现账号</span><span>账户交易</span><span>投注统计</span><span>会员消息</span><span>会员日志</span><span>登录设备</span><span data-t="rel">账号同关联</span>
+  </div>
+  <div class="body" id="pRel" style="display:none">
+    <div class="phbody">账号同关联<small id="relCond"></small></div>
+  </div>
+  <div class="body" id="pOv">
+    <table class="ov">
+      <tbody>
+      <tr><td class="l">账号状态</td><td><span class="tag-ok">正常</span> <span class="mut">(状态备注:)</span></td><td class="a"><a class="lk">修改状态</a></td></tr>
+      <tr><td class="l">账号类型</td><td id="accType"></td><td class="a"></td></tr>
+      <tr><td class="l">自我禁止状态</td><td>正常</td><td class="a"><a class="lk dis">恢复正常</a></td></tr>
+
+      <tr class="new"><td class="l"><span class="no">1</span>上级代理<span class="q" data-tip="会员当前归属的代理，决定佣金归属。与注册时的邀请人不同。">?</span><span class="badge n">新增</span></td>
+        <td id="agentCell"></td>
+        <td class="a" id="agentAct"></td></tr>
+      <tr class="new"><td class="l"><span class="no">2</span>代理佣金<span class="q" data-tip="该会员作为代理，累计已发放到账的代理佣金总额。">?</span><span class="badge n">新增</span></td>
+        <td>累计佣金：<a class="v" id="commCell" data-ph="代理中心-佣金管理"></a></td>
+        <td class="a"></td></tr>
+
+      <tr><td class="l">真实姓名</td><td><span class="mut">--</span> 近6天同姓名(0)</td><td class="a"><a class="lk dis">批量处理</a></td></tr>
+      <tr><td class="l">会员币种</td><td>CNY</td><td class="a"></td></tr>
+      <tr><td class="l">总余额(含利息宝)</td><td><span style="color:#1f6dff;font-weight:600">0.00</span> <span class="mut">(余额钱包0.00 + 利息宝0.00)</span></td><td class="a"><a class="lk">刷新</a><a class="lk">账变记录</a></td></tr>
+      <tr class="gap"><td colspan="3">…… 中间字段（VIP等级 / 会员标签 / 会员层级 / 登录密码 等）保持现状，本期不调整 ……</td></tr>
+      <tr><td class="l">提现密码</td><td>****** <a class="v">同提现密码人数(***)</a></td><td class="a"><a class="lk">重置提现密码</a><a class="lk dis">批量处理</a></td></tr>
+      <tr><td class="l">提现账号</td><td><a class="v">0 个</a> <span class="mut">同提现账号(0)</span></td><td class="a"><a class="lk dis">批量处理</a></td></tr>
+
+      <tr class="chg"><td class="l"><span class="no">3</span>注册IP<span class="badge c">调整</span></td>
+        <td id="regIpCell"></td><td class="a" id="regIpAct"></td></tr>
+      <tr><td class="l">注册域名</td><td id="regDomain"></td><td class="a"></td></tr>
+      <tr class="chg"><td class="l"><span class="no">4</span>注册设备号<span class="badge c">调整</span></td>
+        <td id="regDevCell"></td><td class="a" id="regDevAct"></td></tr>
+      <tr><td class="l">注册浏览器指纹</td><td class="mono" id="regFp"></td><td class="a"></td></tr>
+      <tr><td class="l">注册来源</td><td id="regSrc"></td><td class="a"></td></tr>
+      <tr class="chg"><td class="l"><span class="no">5</span>最后登录IP<span class="badge c">调整</span></td>
+        <td id="lastIpCell"></td><td class="a" id="lastIpAct"></td></tr>
+      <tr><td class="l">最后登录域名</td><td><a class="v">player-api.ugprod888.com</a></td><td class="a"></td></tr>
+      <tr class="chg"><td class="l"><span class="no">6</span>最后登录设备号<span class="badge c">调整</span></td>
+        <td id="lastDevCell"></td><td class="a" id="lastDevAct"></td></tr>
+      <tr><td class="l">最后登录指纹</td><td class="mono">7f55fef7-0d7f-498d-9164-40d67f01d119</td><td class="a"></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 解除上级二次确认 -->
+<div class="mask" id="mConfirm"><div class="md">
+  <div class="mh">温馨提示<span class="x" data-close>×</span></div>
+  <div class="cf" id="cfTxt"></div>
+  <div class="mf"><button class="btn" data-close>取消</button><button class="btn p" id="cfOk">确认</button></div>
+</div></div>
+
+<!-- 占位页 -->
+<div class="mask" id="mPh"><div class="ph">
+  <div class="mh"><span id="phTitle"></span><span class="x" data-close>×</span></div>
+  <div class="pb"><span id="phName"></span><small id="phCond"></small></div>
+</div></div>
+
+<div class="tip" id="tip"></div>
+<div class="msg" id="msg"></div>
+
+<script>
+const D={
+ A:{acc:'pmu108dx1',id:649,type:'正式账号-人人代理',
+    agent:{acc:'tilly888',id:523},comm:'1,286.40',
+    regIp:'27.255.74.34',regArea:'South Korea/Seoul-Gasan-dong',regTime:'2026-10-04 09:32:47',regDays:30,sameRegIp:0,
+    domain:'bawandemo.98465.co',
+    regDev:'dfd86afe-dd19-48cd-b33a-1928e93a7b35',regDevName:'Edge v154.0.0.0',sameRegDev:4,
+    regFp:'GEE3-01-edaa58388417ebcc962a80752e2fb22970b4b96c77088940d652256f5b7b87b3',src:'官网',
+    lastIp:'165.154.243.45',lastArea:'Hong Kong/Kowloon',lastTime:'2026-11-03 08:52:10',sameLastIp:0,
+    lastDev:'7f55fef7-0d7f-498d-9164-40d67f01d119',lastDevName:'iPhone',sameLastDev:3},
+ B:{acc:'m1008b21',id:631,type:'正式账号-普通会员',
+    agent:null,comm:'0.00',
+    regIp:'',regArea:'',regTime:'2026-10-08 18:36:45',regDays:26,sameRegIp:0,
+    domain:'',
+    regDev:'',regDevName:'',sameRegDev:0,regFp:'',src:'后台添加',
+    lastIp:'165.154.243.45',lastArea:'Hong Kong/Kowloon',lastTime:'2026-10-08 18:37:56',sameLastIp:2,
+    lastDev:'7f55fef7-0d7f-498d-9164-40d67f01d119',lastDevName:'iPhone',sameLastDev:0}
+};
+let cur='A',editing=false;const $=id=>document.getElementById(id);
+const REL_TIP='仅记录已触发“同关联处罚”的用户';
+const Q=`<span class="q" data-tip="${REL_TIP}">?</span>`;
+const cnt=n=>n>0?`<span class="red">(${n})</span>`:`(${n})`;
+function link(v,cond){return `<a class="v mono" data-ph="所有会员" data-cond="${cond}">${v}</a>`}
+// 右侧：更多关联/更多记录 + 批量处理 → 账号同关联
+function acts(has,n,more,type){
+ const m=has?`<a class="lk" data-rel="${type}">${more}</a>`:`<a class="lk dis" data-tip="暂无数据">${more}</a>`;
+ const b=(has&&n>0)?`<a class="lk" data-rel="${type}">批量处理</a>`:`<a class="lk dis" data-tip="暂无关联会员，不可操作">批量处理</a>`;
+ return m+b;
+}
+function renderAgent(){
+ const d=D[cur],show=d.agent?`<span class="mono">${d.agent.acc}</span> <span class="mut">(ID: ${d.agent.id})</span>`:'<span class="mut">--</span>';
+ if(editing){
+  $('agentCell').innerHTML=show+'<input class="ipt" id="agentIpt" placeholder="请输入代理账号">';
+  $('agentAct').innerHTML='<a class="lk" id="agCancel">取消</a><a class="lk" id="agOk">确认</a>';
+  $('agCancel').onclick=()=>{editing=false;renderAgent()};
+  $('agOk').onclick=submitAgent;$('agentIpt').focus();
+ }else{
+  $('agentCell').innerHTML=show;
+  $('agentAct').innerHTML='<a class="lk" id="agEdit">修改</a>';
+  $('agEdit').onclick=()=>{editing=true;renderAgent()};
+ }
+}
+function render(){
+ const d=D[cur];editing=false;
+ $('hAcc').textContent=d.acc;$('hId').textContent=d.id;$('accType').textContent=d.type;
+ renderAgent();
+ $('commCell').textContent=d.comm;$('commCell').dataset.cond='代理账号：'+d.acc;
+ $('regIpCell').innerHTML=d.regIp
+  ?`${link(d.regIp,'搜索类型：注册IP = '+d.regIp)} <span class="mut">(${d.regArea})</span> 注册时间 ${d.regTime} <span class="mut">(已注册${d.regDays}天)</span><br><span class="sub">同IP人数${cnt(d.sameRegIp)}</span>${Q}`
+  :`<span class="mut">--</span> 注册时间 ${d.regTime} <span class="mut">(已注册${d.regDays}天)</span>`;
+ $('regIpAct').innerHTML=acts(!!d.regIp,d.sameRegIp,'更多关联','同注册IP');
+ $('regDomain').innerHTML=d.domain?`<a class="v">${d.domain}</a>`:'<span class="mut">--</span>';
+ $('regDevCell').innerHTML=d.regDev?`${link(d.regDev,'搜索类型：注册设备号 = '+d.regDev)} <span class="mut">(设备号) (${d.regDevName})</span><br><span class="sub">同注册设备人数${cnt(d.sameRegDev)}</span>${Q}`:'<span class="mut">--</span>';
+ $('regDevAct').innerHTML=acts(!!d.regDev,d.sameRegDev,'更多关联','同注册设备');
+ $('regFp').innerHTML=d.regFp||'<span class="mut">--</span>';$('regSrc').textContent=d.src;
+ $('lastIpCell').innerHTML=`${link(d.lastIp,'搜索类型：最后登录IP = '+d.lastIp)} <span class="mut">(${d.lastArea})</span> 登录时间 ${d.lastTime}<br><span class="sub">同IP登录人数${cnt(d.sameLastIp)}</span>${Q}`;
+ $('lastIpAct').innerHTML=acts(true,d.sameLastIp,'更多记录','同登录IP');
+ $('lastDevCell').innerHTML=`${link(d.lastDev,'搜索类型：最后登录设备号 = '+d.lastDev)} <span class="mut">(设备号) (${d.lastDevName})</span><br><span class="sub">同登录设备数${cnt(d.sameLastDev)}</span>${Q}`;
+ $('lastDevAct').innerHTML=acts(true,d.sameLastDev,'更多记录','同登录设备');
+}
+render();
+$('seg').onclick=e=>{const s=e.target.dataset.s;if(!s)return;cur=s;[...$('seg').children].forEach(x=>x.classList.toggle('on',x.dataset.s===s));showTab('ov');render()};
+$('mkChk').onchange=e=>document.body.classList.toggle('mk',e.target.checked);
+
+// 页签
+function showTab(t,cond){[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.t===t));
+ $('pOv').style.display=t==='ov'?'':'none';$('pRel').style.display=t==='rel'?'':'none';$('relCond').textContent=cond||''}
+$('tabs').onclick=e=>{const t=e.target.dataset.t;if(t)showTab(t)};
+document.addEventListener('click',e=>{const a=e.target.closest('[data-rel]');if(!a)return;showTab('rel','预设：关联类型 = '+a.dataset.rel)});
+
+// tooltip
+const tip=$('tip');
+document.addEventListener('mouseover',e=>{const t=e.target.closest('[data-tip]');if(t&&t.dataset.tip){tip.textContent=t.dataset.tip;tip.style.display='block';const r=t.getBoundingClientRect();tip.style.left=Math.min(r.left-20,window.innerWidth-320)+'px';tip.style.top=(r.top-tip.offsetHeight-8)+'px'}});
+document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip]'))tip.style.display='none'});
+
+// 占位页
+document.addEventListener('click',e=>{const a=e.target.closest('[data-ph]');if(!a)return;
+ $('phTitle').textContent=a.dataset.ph;$('phName').textContent=a.dataset.ph;$('phCond').textContent=a.dataset.cond?('预设：'+a.dataset.cond):'';$('mPh').classList.add('on')});
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.mask').classList.remove('on'));
+
+function msg(t,ok){const m=$('msg');m.className='msg '+(ok?'ok':'err');m.textContent=t;m.style.display='block';clearTimeout(m._t);m._t=setTimeout(()=>m.style.display='none',2000)}
+
+// 修改上级代理（行内）
+const AGENTS={tilly888:{id:523,cur:'CNY'},peter66:{id:588,cur:'CNY'},usdtagent1:{id:701,cur:'USDT1'},pmu108dx1:{id:649,cur:'CNY'},m1008b21:{id:631,cur:'CNY'},sub0091:{id:690,cur:'CNY',sub:true}};
+function submitAgent(){
+ const v=$('agentIpt').value.trim(),d=D[cur],a=AGENTS[v];
+ if(!v){
+  if(!d.agent)return msg('当前无上级代理，请输入代理账号');
+  $('cfTxt').innerHTML=`⚠️ 确认解除会员 <b>${d.acc}</b> 的上级代理 <b>${d.agent.acc}</b>？<br>解除后，该会员上次佣金结算之后产生的佣金不再归属任何上级代理。`;
+  $('cfOk').onclick=()=>{d.agent=null;$('mConfirm').classList.remove('on');editing=false;renderAgent();msg('保存成功',true)};
+  return $('mConfirm').classList.add('on');
+ }
+ if(!a)return msg('代理账号不存在');
+ if(v===d.acc||a.sub)return msg('不能选择会员自己或其下级作为上级代理');
+ if(a.cur!=='CNY')return msg('只能选择同币种的代理账号');
+ if(d.agent&&d.agent.acc===v)return msg('新上级代理与当前上级代理相同');
+ d.agent={acc:v,id:a.id};editing=false;renderAgent();msg('保存成功',true);
+}
+</script>
+</body>
+</html>
