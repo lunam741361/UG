@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>大额两步验证保护 - 交互原型</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;font-size:13px;color:#333;background:#f0f2f5}
+.topbar{height:44px;background:#1460c8;display:flex;align-items:center;padding:0 14px;color:#fff;gap:18px}
+.topbar .logo{background:#fff;color:#1460c8;font-size:11px;padding:3px 6px;font-weight:bold}
+.topbar .env{font-weight:bold}
+.topbar .nav{display:flex;gap:4px;margin-left:30px}
+.topbar .nav span{padding:0 14px;line-height:44px;font-size:12px}
+.topbar .nav span.on{background:#0d4ea8}
+.topbar .user{margin-left:auto;font-size:12px}
+.modebar{background:#fffbe6;border-bottom:1px solid #ffe58f;padding:6px 16px;display:flex;gap:10px;align-items:center;font-size:12px}
+.modebar button{border:1px solid #1460c8;background:#fff;color:#1460c8;padding:3px 12px;border-radius:3px;cursor:pointer;font-size:12px}
+.modebar button.on{background:#1460c8;color:#fff}
+.wrap{padding:0 16px 30px}
+.crumb{padding:12px 0;color:#666;font-size:12px}.crumb b{color:#1460c8;font-weight:normal}
+.card{background:#fff;padding:14px 18px}
+.tabs{display:flex;gap:26px;border-bottom:1px solid #eee;margin-bottom:14px}
+.tabs span{padding:8px 0;font-size:13px}.tabs span.on{color:#1460c8;border-bottom:2px solid #1460c8}
+table.cfg{width:100%;border-collapse:collapse;border:1px solid #e8e8e8}
+table.cfg th{background:#fafafa;text-align:left;padding:10px 12px;font-weight:normal;border-bottom:1px solid #e8e8e8}
+table.cfg td{border-bottom:1px solid #e8e8e8;padding:12px;vertical-align:top}
+table.cfg td.name{width:170px;background:#fafafa;border-right:1px solid #e8e8e8;font-size:12px}
+table.cfg td.name small{display:block;color:#999;margin-top:2px}
+table.cfg td.op{width:150px;white-space:nowrap;text-align:center;border-left:1px solid #e8e8e8;vertical-align:middle}
+.muted{color:#999;font-size:12px;line-height:24px}
+.muted .ck{display:inline-block;width:11px;height:11px;border:1px solid #ccc;margin-right:5px;vertical-align:-1px;background:#f5f5f5}
+.muted .ck.y{background:#c4d8f5;border-color:#a7c3ec}
+.btn{border:1px solid #1460c8;background:#1460c8;color:#fff;padding:4px 14px;border-radius:3px;cursor:pointer;font-size:12px}
+.btn.ghost{background:#fff;color:#555;border-color:#ccc}
+.btn.dis{background:#a9c7ef;border-color:#a9c7ef;cursor:default}
+tr.hl td{background:#f4f8ff}
+tr.hl td.name{background:#eaf2ff}
+/* switch */
+.sw{position:relative;display:inline-block;width:40px;height:20px;border-radius:10px;background:#bfbfbf;cursor:pointer;vertical-align:middle;transition:.2s}
+.sw:after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:#1460c8}.sw.on:after{left:22px}
+.sw.ro{cursor:default;opacity:.7}
+.row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.lab{width:120px;text-align:right;color:#555;white-space:nowrap}
+.chk{display:inline-flex;align-items:center;gap:5px;margin-right:18px;cursor:pointer;user-select:none}
+.chk input{width:14px;height:14px;cursor:pointer}
+.inp{display:flex;align-items:center;border:1px solid #d9d9d9;border-radius:3px;width:200px;height:28px;background:#fff}
+.inp input{border:none;outline:none;flex:1;padding:0 8px;height:26px;font-size:13px;width:100%}
+.inp span{padding:0 8px;color:#999;border-left:1px solid #eee;font-size:12px}
+.inp.err{border-color:#f5222d}
+.err-t{color:#f5222d;font-size:12px}
+.q{display:inline-block;width:14px;height:14px;border-radius:50%;background:#999;color:#fff;text-align:center;line-height:14px;font-size:10px;cursor:help;position:relative;margin-left:3px}
+.q .tip{display:none;position:absolute;left:20px;top:-8px;width:280px;background:rgba(0,0,0,.82);color:#fff;text-align:left;padding:8px 10px;border-radius:4px;font-size:12px;line-height:18px;z-index:20;white-space:normal}
+.q:hover .tip{display:block}
+.sum{line-height:24px;font-size:12px;color:#333}.sum em{font-style:normal;color:#1460c8}
+.tag{display:inline-block;padding:0 6px;border:1px solid #91caff;background:#e6f4ff;color:#1460c8;border-radius:2px;font-size:12px;line-height:18px;margin-right:4px}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#f6ffed;border:1px solid #b7eb8f;color:#389e0d;padding:8px 18px;border-radius:4px;display:none;z-index:99}
+.toast.e{background:#fff2f0;border-color:#ffccc7;color:#cf1322}
+/* front-end */
+#front{display:none;padding:20px 16px;gap:28px}
+.ctrl{width:340px;background:#fff;padding:16px;border-radius:4px;align-self:flex-start}
+.ctrl h3{font-size:14px;margin-bottom:12px}
+.ctrl .row .lab{width:96px}
+.ctrl .hint{background:#f6f8fb;border:1px dashed #c9d6ea;padding:8px 10px;font-size:12px;line-height:20px;color:#555;margin-top:6px}
+.phone{width:375px;height:720px;background:#fff;border:10px solid #222;border-radius:34px;overflow:hidden;position:relative;flex-shrink:0}
+.ph-h{height:46px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:bold;border-bottom:1px solid #eee;position:relative}
+.ph-h .back{position:absolute;left:14px;font-weight:normal;cursor:pointer;color:#666}
+.ph-b{padding:16px}
+.bal{background:linear-gradient(135deg,#2b74e2,#1450b8);color:#fff;border-radius:10px;padding:18px}
+.bal p{font-size:12px;opacity:.85}.bal b{font-size:22px;display:block;margin:4px 0 10px}
+.bal .two{display:flex;gap:30px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;text-align:center;font-size:12px}
+.grid div{padding:12px 0;background:#f5f7fa;border-radius:8px;cursor:pointer}
+.grid div.main{background:#e6f0ff;color:#1460c8;font-weight:bold}
+.ph-place{height:560px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;color:#999;font-size:15px;border:1px dashed #ddd;margin:16px;border-radius:8px}
+#pg-sec{position:absolute;inset:0;background:#1f2229;color:#ddd;font-size:13px}
+.sc-h{height:46px;display:flex;align-items:center;padding:0 14px;background:#16181d;gap:22px}
+.sc-h .back{font-size:22px;color:#aaa;cursor:pointer}
+.sc-logo{background:#e8eefc;color:#1d3f8f;border:1px solid #5b7fd6;font-size:11px;font-weight:bold;padding:2px 8px}
+.sc-t{margin-left:auto;color:#fff;font-size:15px}
+.sc-g{margin:10px 8px;background:#272a32;border-radius:8px;overflow:hidden}
+.sc-r{display:flex;align-items:center;height:40px;padding:0 12px;border-bottom:1px solid #30343d;cursor:pointer}
+.sc-r:last-child{border-bottom:none}
+.sc-r .i{width:16px;margin-right:10px;text-align:center;font-size:12px}
+.sc-r .n{position:relative}
+.sc-r .n.dot:after{content:"";position:absolute;right:-6px;top:-2px;width:6px;height:6px;border-radius:50%;background:#f5222d}
+.sc-r .s{margin-left:auto;color:#999;font-size:12px}
+.sc-r .s.y{color:#e8c56a}
+.sc-r .a{color:#777;margin-left:8px}
+.ptoast{position:absolute;left:12px;right:12px;top:400px;background:#fff;color:#222;border-radius:6px;padding:14px 16px;display:none;align-items:center;gap:12px;font-size:15px;line-height:22px;z-index:9}
+.ptoast .ic{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#e00;color:#fff;text-align:center;line-height:20px;font-weight:bold;font-size:13px}
+.mask{position:absolute;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:5}
+.dlg{width:300px;background:#fff;border-radius:12px;padding:22px 18px 16px;text-align:center}
+.dlg h4{font-size:16px;margin-bottom:10px}
+.dlg p{font-size:13px;color:#666;line-height:20px;margin-bottom:16px}
+.dlg .opt{display:flex;align-items:center;justify-content:space-between;border:1px solid #e5e5e5;border-radius:8px;padding:11px 12px;margin-bottom:10px;cursor:pointer;font-size:14px}
+.dlg .opt:hover{border-color:#1460c8}
+.dlg .opt i{font-style:normal;color:#1460c8;font-size:12px}
+.dlg .opt.done{color:#999;cursor:default}.dlg .opt.done i{color:#52c41a}
+.dlg .cancel{margin-top:6px;color:#999;font-size:13px;cursor:pointer}
+.pbtn{background:#1460c8;color:#fff;border:none;border-radius:20px;padding:10px 30px;font-size:14px;cursor:pointer}
+/* notes */
+.notes{display:none}
+body.static .modebar{display:none}
+body.static .notes{display:block;position:fixed;right:0;top:0;bottom:0;width:400px;background:#fffef5;border-left:3px solid #faad14;padding:20px 22px;overflow:auto;z-index:50}
+body.static{padding-right:400px}
+.notes h2{font-size:16px;margin-bottom:4px;color:#d46b08}
+.notes .sub{font-size:12px;color:#999;margin-bottom:14px}
+.notes ol{padding-left:0;list-style:none}
+.notes li{margin-bottom:12px;line-height:20px;font-size:13px;display:flex;gap:8px}
+.mk{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#fa541c;color:#fff;font-size:12px;text-align:center;line-height:20px;font-weight:bold;display:inline-block}
+.pin{display:none}
+body.static .pin{display:inline-block;margin-left:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="modebar">原型视图：
+  <button id="b-admin" class="on" onclick="view('admin')">后台：安全中心配置</button>
+  <button id="b-front" onclick="view('front')">前台：提现强制绑定演示</button>
+  <span style="color:#999">（后台保存的配置会同步到前台演示）</span>
+</div>
+
+<div id="admin">
+<div class="topbar"><span class="logo">logo 500×100px</span><span class="env">UAT环境</span>
+  <div class="nav"><span>仪表盘</span><span>运营</span><span>游戏</span><span class="on">会员</span><span>代理</span><span>优惠</span><span>财务</span><span>报表</span><span>风控</span><span>系统</span></div>
+  <span class="user">时区：UTC+08:00 &nbsp; Tavin</span></div>
+<div class="wrap">
+  <div class="crumb">会员 / <b>注册和验证</b></div>
+  <div class="card">
+    <div class="tabs"><span>登录/注册配置</span><span class="on">安全中心配置</span><span>短信配置</span><span>会员基本信息设置</span><span>防刷风控</span></div>
+    <table class="cfg">
+      <tr><th colspan="3">安全中心配置</th></tr>
+      <tr><td class="name">注册时安全绑定<small>(即提高账户安全)</small></td><td><div class="muted">◉ 不强制绑定（推荐）</div></td><td class="op"><span class="btn dis">修改</span></td></tr>
+      <tr><td class="name">安全中心新增/修改验证</td><td><div class="muted">◉ 开启安全验证（勾选验证以下任意1项） &nbsp; ○ 无需验证（直接修改）<br><span class="ck y"></span>验证登录密码 &nbsp; <span class="ck y"></span>验证手机短信 &nbsp; <span class="ck y"></span>验证密保</div></td><td class="op"><span class="btn dis">修改</span></td></tr>
+      <tr><td class="name">首次设置提现密码安全项</td><td><div class="muted">○ 无需任何验证(推荐) &nbsp; ◉ 需验证登录密码(信任设备免验证)</div></td><td class="op"><span class="btn dis">修改</span></td></tr>
+      <tr><td class="name">提现资产保护</td><td><div class="muted"><span class="ck"></span>申请提现两步验证(勾选开启) &nbsp; <span class="ck"></span>添加不记名虚拟币地址两步验证</div></td><td class="op"><span class="btn dis">修改</span></td></tr>
+      <tr class="hl" id="bigRow">
+        <td class="name">大额两步验证保护<span class="mk pin">1</span></td>
+        <td id="bigCell"></td>
+        <td class="op" id="bigOp"></td>
+      </tr>
+      <tr><td class="name">设备信任开关<small>(方便懒人免密码修改资料)</small></td><td><div class="muted"><span class="ck y"></span>修改会员资料 &nbsp; <span class="ck y"></span>修改登录密码 &nbsp; <span class="ck y"></span>提现相关操作</div></td><td class="op"><span class="btn dis">修改</span></td></tr>
+    </table>
+  </div>
+</div>
+</div>
+
+<div id="front">
+  <div class="ctrl">
+    <h3>演示控制台：会员状态</h3>
+    <div class="row"><span class="lab">CNY余额</span><div class="inp"><input id="mCny" value="80000" oninput="renderPhone()"><span>CNY</span></div></div>
+    <div class="row"><span class="lab">USDT余额</span><div class="inp"><input id="mUsdt" value="0" oninput="renderPhone()"><span>USDT</span></div></div>
+    <div class="row"><span class="lab">已绑定</span><div>
+      <label class="chk"><input type="checkbox" id="bPhone" onchange="renderPhone()">手机</label>
+      <label class="chk"><input type="checkbox" id="bEmail" onchange="renderPhone()">邮箱</label><br>
+      <label class="chk" style="margin-top:6px"><input type="checkbox" id="bGoogle" onchange="renderPhone()">谷歌验证器</label></div></div>
+    <div class="hint" id="cfgHint"></div>
+    <div class="hint" id="judge" style="border-color:#ffd591;background:#fff7e6"></div>
+  </div>
+  <div class="phone">
+    <div id="pg-home">
+      <div class="ph-h">我的</div>
+      <div class="ph-b">
+        <div class="bal"><p>账户余额</p><div class="two"><div><p>CNY</p><b id="sCny"></b></div><div><p>USDT</p><b id="sUsdt"></b></div></div></div>
+        <div class="grid"><div>充值</div><div class="main" onclick="tryWithdraw()">提现<span class="mk pin">3</span></div><div>转账</div><div>交易记录</div><div>安全中心</div><div>VIP</div><div>消息</div><div>客服</div></div>
+      </div>
+    </div>
+    <div id="pg-other" style="display:none">
+      <div class="ph-h"><span class="back" onclick="go('home')">‹ 返回</span><span id="oTitle"></span></div>
+      <div class="ph-place"><div id="oName"></div><button class="pbtn" id="oBtn"></button></div>
+    </div>
+    <div id="pg-sec" style="display:none">
+      <div class="sc-h"><span class="back" onclick="go('home')">‹</span><span class="sc-logo">logo 500×100px</span><span class="sc-t">安全中心<span class="mk pin">4</span></span></div>
+      <div id="secList"></div>
+    </div>
+    <div class="ptoast" id="ptoast"><span class="ic">!</span><span id="ptoastT"></span><span class="mk pin" style="position:absolute;right:-8px;top:-8px">5</span></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+// ---------- state ----------
+const ITEMS=[['phone','手机'],['email','邮箱'],['google','谷歌验证器']];
+let cfg={on:false,items:{phone:false,email:false,google:false},cny:'',usdt:''};
+let edit=false, draft=null;
+
+function toast(t,e){const d=document.getElementById('toast');d.textContent=t;d.className='toast'+(e?' e':'');d.style.display='block';clearTimeout(d._t);d._t=setTimeout(()=>d.style.display='none',2000)}
+function anyItem(o){return Object.values(o.items).some(Boolean)}
+function names(o){return ITEMS.filter(i=>o.items[i[0]]).map(i=>i[1])}
+const TIP={
+ sw:'开启后，会员任一币种余额达到设定值且未绑定任一已勾选的安全项时，申请提现需先完成绑定；关闭则不做限制。',
+ way:'可多选。会员绑定已勾选项中的任意一项，即可继续提现。',
+ cny:'会员CNY余额大于或等于该值时触发绑定校验。',
+ usdt:'会员USDT余额大于或等于该值时触发绑定校验。'};
+function q(k,n){return `<span class="q">?<span class="tip">${TIP[k]}</span></span>`+(n?`<span class="mk pin">${n}</span>`:'')}
+
+function renderAdmin(){
+  const c=document.getElementById('bigCell'),op=document.getElementById('bigOp');
+  if(!edit){
+    if(!cfg.on){c.innerHTML=`<div class="row" style="margin:0"><span class="sw ro"></span><span class="muted">未开启</span></div>`}
+    else{c.innerHTML=`<div class="row" style="margin-bottom:6px"><span class="sw on ro"></span><span class="muted">已开启</span></div>
+      <div class="sum">验证方式：${names(cfg).map(n=>`<span class="tag">${n}</span>`).join('')}</div>
+      <div class="sum">触发条件：CNY余额 ≥ <em>${fmt(cfg.cny)}</em> 或 USDT余额 ≥ <em>${fmt(cfg.usdt)}</em> 且未绑定以上任一项</div>`}
+    op.innerHTML=`<button class="btn" onclick="startEdit()">修改</button>`;
+    return;
+  }
+  const d=draft;
+  let h=`<div class="row"><span class="lab">开启状态${q('sw',2)}</span><span class="sw ${d.on?'on':''}" onclick="draft.on=!draft.on;renderAdmin()"></span><span class="muted">${d.on?'已开启':'已关闭'}</span></div>`;
+  if(d.on){
+    h+=`<div class="row"><span class="lab">验证方式${q('way',3)}</span><div>`+
+      ITEMS.map(i=>`<label class="chk"><input type="checkbox" ${d.items[i[0]]?'checked':''} onchange="draft.items['${i[0]}']=this.checked;renderAdmin()">${i[1]}</label>`).join('')+
+      `</div>${d._e&&d._e.items?`<span class="err-t">${d._e.items}</span>`:''}</div>`;
+    if(anyItem(d)){
+      h+=`<div class="row"><span class="lab">CNY余额 ≥${q('cny',4)}</span><div class="inp ${d._e&&d._e.cny?'err':''}"><input value="${d.cny}" placeholder="请输入金额" oninput="draft.cny=this.value"><span>CNY</span></div>${d._e&&d._e.cny?`<span class="err-t">${d._e.cny}</span>`:''}</div>
+      <div class="row"><span class="lab">USDT余额 ≥${q('usdt')}</span><div class="inp ${d._e&&d._e.usdt?'err':''}"><input value="${d.usdt}" placeholder="请输入金额" oninput="draft.usdt=this.value"><span>USDT</span></div>${d._e&&d._e.usdt?`<span class="err-t">${d._e.usdt}</span>`:''}</div>`;
+    }
+  }
+  c.innerHTML=h;
+  op.innerHTML=`<button class="btn ghost" onclick="edit=false;renderAdmin()">取消</button> <button class="btn" onclick="save()">保存</button><span class="mk pin">5</span>`;
+}
+function fmt(v){return Number(v).toLocaleString('zh-CN',{maximumFractionDigits:2})}
+function startEdit(){draft=JSON.parse(JSON.stringify(cfg));edit=true;renderAdmin()}
+function chkAmt(v){if(v==='')return '请输入金额';if(!/^\d+(\.\d{1,2})?$/.test(v))return '请输入数字，最多2位小数';if(Number(v)<=0)return '金额需大于0';return ''}
+function save(){
+  const d=draft;d._e={};
+  if(d.on){
+    if(!anyItem(d))d._e.items='请至少勾选一项验证方式';
+    else{const a=chkAmt(d.cny),b=chkAmt(d.usdt);if(a)d._e.cny=a;if(b)d._e.usdt=b;}
+  }
+  if(Object.keys(d._e).length){renderAdmin();toast('请完善配置后再保存',1);return}
+  delete d._e;cfg=JSON.parse(JSON.stringify(d));edit=false;renderAdmin();renderPhone();toast('保存成功')
+}
+
+// ---------- front ----------
+function bound(k){return document.getElementById({phone:'bPhone',email:'bEmail',google:'bGoogle'}[k]).checked}
+function needBind(){
+  if(!cfg.on)return {need:false,why:'后台未开启大额两步验证保护'};
+  const cny=Number(document.getElementById('mCny').value)||0,usdt=Number(document.getElementById('mUsdt').value)||0;
+  const hit=cny>=Number(cfg.cny)||usdt>=Number(cfg.usdt);
+  if(!hit)return {need:false,why:'余额未达到设定值'};
+  const ok=ITEMS.some(i=>cfg.items[i[0]]&&bound(i[0]));
+  if(ok)return {need:false,why:'余额已达设定值，但已绑定其中一项安全项'};
+  return {need:true,why:'余额已达设定值，且未绑定任一要求的安全项'};
+}
+function renderPhone(){
+  document.getElementById('sCny').textContent=fmt(document.getElementById('mCny').value||0);
+  document.getElementById('sUsdt').textContent=fmt(document.getElementById('mUsdt').value||0);
+  document.getElementById('cfgHint').innerHTML=cfg.on?`当前后台配置：<b>已开启</b><br>验证方式：${names(cfg).join(' / ')}<br>CNY余额 ≥ ${fmt(cfg.cny)} 或 USDT余额 ≥ ${fmt(cfg.usdt)}`:'当前后台配置：<b>未开启</b>（请先到后台视图开启并保存）';
+  const r=needBind();document.getElementById('judge').innerHTML=`点击「提现」预期结果：<b>${r.need?'跳转安全中心并toast提示':'直接进入提现页'}</b><br>原因：${r.why}`;
+}
+function go(p,title,btn,fn){
+  document.getElementById('pg-home').style.display=p==='home'?'block':'none';
+  document.getElementById('pg-other').style.display=p==='other'?'block':'none';
+  document.getElementById('pg-sec').style.display=p==='sec'?'block':'none';
+  if(p==='other'){document.getElementById('oTitle').textContent=title;document.getElementById('oName').textContent=title+'（现有页面）';
+    const b=document.getElementById('oBtn');b.style.display=btn?'inline-block':'none';b.textContent=btn||'';b.onclick=fn}
+  if(p==='sec')renderSec();
+}
+// 拼接提示文案：手机 / 手机或谷歌验证器 / 手机、邮箱或谷歌验证器
+function bindText(){const n=names(cfg);return '请先绑定'+(n.length>1?n.slice(0,-1).join('、')+'或'+n[n.length-1]:n[0])}
+let ptT;
+function ptoast(t,keep){const d=document.getElementById('ptoast');document.getElementById('ptoastT').textContent=t;d.style.display='flex';clearTimeout(ptT);if(!keep)ptT=setTimeout(()=>d.style.display='none',2500)}
+function tryWithdraw(){if(needBind().need){go('sec');ptoast(bindText())}else go('other','提现')}
+function renderSec(){
+  const st=k=>bound(k);
+  const row=(i,n,s,y,k)=>`<div class="sc-r" ${k?`onclick="toBind('${k}','${n}')"`:''}><span class="i">${i}</span><span class="n ${!y&&k?'dot':''}">${n}</span><span class="s ${y==='y'?'y':''}">${s}</span><span class="a">›</span></div>`;
+  document.getElementById('secList').innerHTML=`<div class="sc-g">
+    <div class="sc-r"><span class="i">👤</span><span class="n">会员账号</span><span class="s">Tavian</span><span class="a">⧉</span></div>
+    ${row('📱','手机',st('phone')?'已开启':'未绑定',st('phone'),'phone')}
+    ${row('✉','邮箱',st('email')?'已开启':'未绑定',st('email'),'email')}
+    ${row('G','谷歌验证器',st('google')?'已开启':'未绑定',st('google'),'google')}
+  </div><div class="sc-g">
+    ${row('🔑','登录密码','',1)}
+    ${row('💳','提现密码','已设置','y')}
+    ${row('🛡','密保问题','未设置',1)}
+  </div>`;
+}
+function toBind(k,n){go('other','绑定'+n,'模拟绑定成功',()=>{
+  document.getElementById({phone:'bPhone',email:'bEmail',google:'bGoogle'}[k]).checked=true;renderPhone();
+  go('sec');ptoast('绑定成功')})}
+
+function view(v){
+  document.getElementById('admin').style.display=v==='admin'?'block':'none';
+  document.getElementById('front').style.display=v==='front'?'flex':'none';
+  document.getElementById('b-admin').className=v==='admin'?'on':'';document.getElementById('b-front').className=v==='front'?'on':'';
+  if(v==='front')renderPhone();
+}
+
+// ---------- static shots (#s1 / #s2 / #s3) ----------
+const NOTES={
+ s1:['后台 · 大额两步验证保护（查看态）','会员 / 注册和验证 / 安全中心配置',[
+  ['1','位于「提现资产保护」下方。查看态展示开关状态；已开启时展示已勾选的验证方式与CNY、USDT触发金额。'],
+  ['·','点击「修改」进入编辑态；未点修改前不可编辑。'],
+  ['·','默认关闭。关闭状态下前台提现不做任何绑定校验。']]],
+ s2:['后台 · 大额两步验证保护（编辑态）','会员 / 注册和验证 / 安全中心配置',[
+  ['2','开启状态：开关控制。关闭时隐藏验证方式和金额配置，保存后功能失效（已配置内容保留，再次开启可回显）。'],
+  ['3','验证方式：手机 / 邮箱 / 谷歌验证器，可多选，开启时至少勾选一项。会员绑定已勾选项中的任意一项即视为满足。'],
+  ['4','勾选任意验证方式后，展示「CNY余额 ≥」「USDT余额 ≥」，两项均必填，大于0，最多2位小数。'],
+  ['·','触发条件：会员CNY余额 ≥ 设定值 或 USDT余额 ≥ 设定值（任一币种达到即触发），且未绑定任一已勾选安全项。'],
+  ['5','保存：校验不通过时在对应项下提示；保存成功后立即对所有会员生效，返回查看态。'],
+  ['·','该配置的修改记录写入后台操作日志。']]],
+ s3:['前台 · 提现命中大额两步验证','H5 / 我的 / 提现 → 安全中心',[
+  ['3','会员点击「提现」时校验：后台已开启 + 任一币种余额达到设定值 + 未绑定任一后台勾选的验证方式 → 拦截，不进入提现页；否则正常进入提现页。'],
+  ['4','命中后直接跳转至前台「安全中心」页面（现有页面），会员可在此选择任一后台勾选的方式进行绑定。'],
+  ['5','跳转同时toast提示「请先绑定XXX」，XXX为后台勾选的验证方式，多项时用“、”分隔、最后一项前用“或”连接。例：仅勾手机→「请先绑定手机」；勾手机+谷歌→「请先绑定手机或谷歌验证器」；全勾→「请先绑定手机、邮箱或谷歌验证器」。'],
+  ['·','toast样式沿用前台现有提示样式（白底、红色感叹号图标、居中显示），约2.5秒后自动消失。'],
+  ['·','会员绑定任一要求的验证方式后返回安全中心，再次点击提现即可正常提现；余额回落至设定值以下或后台关闭开关，均不再拦截。']]]
+};
+function shot(s){
+  document.body.classList.add('static');
+  const n=NOTES[s];document.getElementById('notes').innerHTML=`<h2>${n[0]}</h2><div class="sub">${n[1]}</div><ol>${n[2].map(x=>`<li><span class="mk">${x[0]}</span><span>${x[1]}</span></li>`).join('')}</ol>`;
+  if(s==='s1'){cfg={on:true,items:{phone:true,email:false,google:true},cny:'50000',usdt:'7000'};renderAdmin();view('admin')}
+  if(s==='s2'){cfg={on:true,items:{phone:true,email:false,google:true},cny:'50000',usdt:'7000'};startEdit();view('admin')}
+  if(s==='s3'){cfg={on:true,items:{phone:true,email:false,google:true},cny:'50000',usdt:'7000'};renderAdmin();view('front');go('sec');ptoast(bindText(),1)}
+}
+renderAdmin();renderPhone();
+if(location.hash)shot(location.hash.slice(1));
+</script>
+</body>
+</html>
