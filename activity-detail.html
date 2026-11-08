@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>【原型】优惠 · 活动中心 — 活动详情（只读查看）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;color:#303133;background:#f0f2f5}
+a{text-decoration:none}
+/* 顶栏 */
+.top{height:48px;background:#1667d9;display:flex;align-items:center;color:#fff;padding:0 16px}
+.logo{background:#fff;color:#1667d9;font-weight:700;font-size:12px;padding:4px 10px;border-radius:3px}
+.brand{font-weight:700;margin:0 40px 0 12px}
+.menu{display:flex;height:48px}
+.menu span{width:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;position:relative}
+.menu span i{font-style:normal;font-size:15px;line-height:16px;margin-bottom:2px}
+.menu span.on{background:#3a82e8}
+.menu b{position:absolute;top:3px;right:6px;background:#f56c6c;font-size:10px;border-radius:8px;padding:0 4px;line-height:14px}
+.tz{margin-left:auto;border:1px solid rgba(255,255,255,.5);border-radius:12px;padding:3px 10px;font-size:12px}
+.user{margin-left:20px;font-weight:700}
+.tabs-open{background:#fff;padding:8px 16px;display:flex;gap:8px;border-bottom:1px solid #ebeef5}
+.tabs-open span{border:1px solid #dcdfe6;padding:3px 10px;font-size:12px;border-radius:3px}
+.tabs-open span.on{border-color:#409eff;color:#409eff}
+.crumb{background:#fff;padding:10px 24px 14px;font-size:13px;color:#606266}
+.crumb em{font-style:normal;color:#409eff}
+.wrap{margin:12px;background:#fff;border-radius:4px;padding:0 16px 16px}
+.subtabs{display:flex;gap:40px;height:46px;align-items:center;border-bottom:1px solid #ebeef5;margin-bottom:14px}
+.subtabs span{height:46px;line-height:46px}
+.subtabs span.on{color:#409eff;border-bottom:2px solid #409eff}
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sel{border:1px solid #dcdfe6;border-radius:4px;height:30px;line-height:28px;padding:0 10px;color:#c0c4cc;width:128px;font-size:12px}
+.btn{display:inline-block;height:30px;line-height:28px;padding:0 15px;border-radius:4px;border:1px solid #dcdfe6;font-size:12px;color:#606266;background:#fff;cursor:pointer}
+.btn.pri{background:#409eff;border-color:#409eff;color:#fff}
+.btn.plain{background:#ecf5ff;border-color:#b3d8ff;color:#409eff}
+.filters .add{margin-left:auto}
+/* 列表 */
+table.list{width:100%;border-collapse:collapse;font-size:12.5px}
+.list th{background:#fafafa;color:#909399;font-weight:600;height:46px;border-bottom:1px solid #ebeef5;padding:0 8px;text-align:left}
+.list td{border-bottom:1px solid #ebeef5;padding:10px 8px;vertical-align:middle;line-height:20px}
+.list tr:hover td{background:#f5f7fa}
+.list td.c,.list th.c{text-align:center}
+.nm{color:#409eff;cursor:pointer}
+.nm:hover{text-decoration:underline}
+.members{width:180px;color:#606266;font-size:12px}
+.tag{display:inline-block;padding:0 7px;line-height:20px;border-radius:3px;font-size:12px;border:1px solid}
+.t-run{color:#67c23a;background:#f0f9eb;border-color:#e1f3d8}
+.t-wait{color:#409eff;background:#ecf5ff;border-color:#d9ecff}
+.t-end{color:#f56c6c;background:#fef0f0;border-color:#fde2e2}
+.t-draft{color:#909399;background:#f4f4f5;border-color:#e9e9eb}
+.ops{display:grid;grid-template-columns:repeat(4,auto);gap:2px 14px;justify-content:start;font-size:12px}
+.ops a{color:#409eff;white-space:nowrap}
+.ops a.warn{color:#e6a23c}
+.ops a.gray{color:#909399}
+.ops .new{color:#409eff;font-weight:700;position:relative}
+.ops .new::after{content:"新增";position:absolute;top:-11px;right:-22px;font-size:9px;font-weight:400;background:#f56c6c;color:#fff;border-radius:6px;padding:0 4px;line-height:13px}
+.ops .na{color:#c0c4cc}
+.foot{display:flex;align-items:center;gap:16px;padding:14px 4px;color:#606266;font-size:12px}
+.foot span:last-child{margin-left:auto}
+.note{margin:12px;background:#fdf6ec;border:1px solid #faecd8;color:#8a6d3b;padding:10px 14px;border-radius:4px;font-size:12px;line-height:20px}
+.note b{color:#e6a23c}
+/* 弹窗 */
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10;align-items:flex-start;justify-content:center;overflow:auto;padding:40px 0}
+.mt{display:none}
+.mt:checked + .mask{display:flex}
+.mask .bg{position:fixed;inset:0;cursor:default}
+.mask .dlg{position:relative;z-index:1}
+#m_edit:checked + .mask{z-index:20}
+label{cursor:pointer}
+label.nm{color:#409eff}
+.ops label{color:#409eff;white-space:nowrap}
+
+.dlg{background:#fff;border-radius:6px;width:880px;max-width:94vw;box-shadow:0 4px 24px rgba(0,0,0,.2)}
+.dlg-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid #ebeef5}
+.dlg-h h3{font-size:16px;font-weight:600}
+.dlg-h .x{margin-left:auto;color:#909399;font-size:20px;line-height:1}
+.dlg-b{padding:16px 20px;max-height:66vh;overflow:auto;background:#fafbfc}
+.dlg-f{padding:12px 20px;border-top:1px solid #ebeef5;display:flex;justify-content:flex-end;gap:10px}
+.meta{display:grid;grid-template-columns:1fr 1fr 1fr 1.3fr;gap:8px 16px;background:#fff;border:1px solid #ebeef5;border-radius:4px;padding:12px 14px;margin-bottom:12px;font-size:12px}
+.meta div{white-space:nowrap}.meta div span{color:#909399;margin-right:6px}
+.sec{background:#fff;border:1px solid #ebeef5;border-radius:4px;margin-bottom:12px}
+.sec h4{font-size:13px;padding:10px 14px;border-bottom:1px solid #f2f3f5;display:flex;align-items:center;gap:6px}
+.sec h4::before{content:"";width:3px;height:13px;background:#409eff;border-radius:2px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding:6px 14px 10px}
+.kv .row{display:flex;padding:7px 0;line-height:20px;border-bottom:1px dashed #f2f3f5}
+.kv .row.full{grid-column:1/-1}
+.kv .k{width:136px;flex-shrink:0;color:#909399;text-align:right;padding-right:14px}
+.kv .v{color:#303133;word-break:break-all}
+.kv .v .chip{display:inline-block;background:#f4f4f5;border-radius:3px;padding:0 6px;margin:0 4px 4px 0;font-size:12px;color:#606266}
+.tip{display:inline-block;position:relative;width:14px;height:14px;border-radius:50%;border:1px solid #c0c4cc;color:#909399;font-size:10px;line-height:12px;text-align:center;margin-left:3px;cursor:help;font-style:normal}
+.tip span{display:none;position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#303133;color:#fff;width:220px;padding:6px 8px;border-radius:4px;font-size:12px;line-height:18px;text-align:left;z-index:5}
+.tip:hover span{display:block}
+table.grad{border-collapse:collapse;width:100%;font-size:12px;margin-top:2px}
+.grad th,.grad td{border:1px solid #ebeef5;padding:5px 8px;text-align:center}
+.grad th{background:#f5f7fa;color:#606266;font-weight:500}
+.cur{font-size:12px;color:#606266;margin:6px 0 4px;font-weight:600}
+.ph{background:#f5f7fa;border:1px dashed #dcdfe6;color:#909399;width:220px;height:100px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:12px}
+.ph.sm{width:110px;height:50px}
+.ph.wide{width:100%;height:150px}
+.rule{background:#f5f7fa;border-radius:4px;padding:8px 10px;line-height:20px;color:#606266;font-size:12px}
+.lang{font-size:11px;color:#909399;margin:4px 0 2px}
+.edit-ph{padding:80px 20px;text-align:center;color:#909399;font-size:15px;background:#fff}
+
+/* WG 风格详情弹窗 */
+.dlg.wg{width:1240px;max-width:96vw;border-radius:4px}
+.wg .vr{display:none}
+.wg .dlg-h{justify-content:center;position:relative;padding:14px 20px;gap:22px}
+.wg .ttl{font-size:15px;font-weight:600}
+.wg .x{position:absolute;right:20px;top:14px;color:#909399;font-size:22px;margin:0}
+.vsel{position:relative;width:140px;height:32px;line-height:30px;border:1px solid #dcdfe6;border-radius:4px;padding:0 12px;color:#606266;cursor:pointer;outline:none}
+.vsel:hover,.vsel:focus-within{border-color:#409eff}
+.vsel .arr{position:absolute;right:10px;color:#c0c4cc}
+.cv{display:none}
+.vmenu{display:none;position:absolute;left:-1px;top:34px;min-width:230px;background:#fff;border:1px solid #e4e7ed;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.1);padding:6px 0;z-index:5}
+.vsel:hover .vmenu,.vsel:focus .vmenu{display:block}
+.vmenu label{display:flex;justify-content:space-between;gap:12px;padding:0 14px;line-height:34px;color:#606266;white-space:nowrap}
+.vmenu label:hover{background:#f5f7fa}
+.vmenu b{font-weight:400}.vmenu em{font-style:normal;color:#c0c4cc;font-size:12px}
+.wg .dlg-b{background:#fff;max-height:76vh;padding:10px 24px 24px}
+.ver{display:none}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
+.r{display:flex;padding:9px 0;line-height:22px}
+.r .k{width:170px;flex-shrink:0;text-align:right;padding-right:28px;font-weight:600;color:#303133}
+.r .v{color:#606266;word-break:break-all}
+.gwrap{padding:0 0 8px 40px}
+.gcur{font-size:12px;color:#606266;margin:4px 0;font-weight:600}
+.gcur.muted{color:#c0c4cc;font-weight:400}
+table.gt{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:6px}
+.gt th{background:#fafafa;font-weight:600;color:#303133}
+.gt th,.gt td{border:1px solid #ebeef5;padding:8px;text-align:center}
+.gt tr:nth-child(even) td{background:#f5f7fa}
+.img{width:400px;height:180px;border:1px solid #ebeef5;border-radius:4px;background:#f5f7fa;display:flex;align-items:center;justify-content:center;color:#909399}
+.img.sm{width:110px;height:110px}.img.wide{width:100%;height:160px}
+.rl p{margin:0 0 6px;text-indent:2em;line-height:26px}
+.strip{background:#fdf6ec;border:1px solid #faecd8;color:#8a6d3b;border-radius:4px;padding:7px 14px;margin:6px 0 8px;font-size:12px;display:flex}
+.strip span{margin-left:auto;display:flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:10px;height:10px;background:#e6a23c;border-radius:2px}
+.r.chg .v,.gwrap.chg td,.r.chg .v .rl p{color:#e6a23c}
+.r.chg .k{color:#e6a23c}
+.wg > .vr:nth-of-type(1):checked ~ .dlg-h .cv0{display:inline}
+.wg > .vr:nth-of-type(1):checked ~ .dlg-b .ver0{display:block}
+.wg > .vr:nth-of-type(1):checked ~ .dlg-h .vmenu label:nth-child(1) b{color:#409eff;font-weight:600}
+.wg > .vr:nth-of-type(2):checked ~ .dlg-h .cv1{display:inline}
+.wg > .vr:nth-of-type(2):checked ~ .dlg-b .ver1{display:block}
+.wg > .vr:nth-of-type(2):checked ~ .dlg-h .vmenu label:nth-child(2) b{color:#409eff;font-weight:600}
+.wg > .vr:nth-of-type(3):checked ~ .dlg-h .cv2{display:inline}
+.wg > .vr:nth-of-type(3):checked ~ .dlg-b .ver2{display:block}
+.wg > .vr:nth-of-type(3):checked ~ .dlg-h .vmenu label:nth-child(3) b{color:#409eff;font-weight:600}
+.wg > .vr:nth-of-type(4):checked ~ .dlg-h .cv3{display:inline}
+.wg > .vr:nth-of-type(4):checked ~ .dlg-b .ver3{display:block}
+.wg > .vr:nth-of-type(4):checked ~ .dlg-h .vmenu label:nth-child(4) b{color:#409eff;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="logo">logo 500×100px</span><span class="brand">QA品牌回归</span>
+  <div class="menu">
+    <span><i>▦</i>仪表盘</span><span><i>▤</i>运营</span><span><i>◉</i>游戏</span><span><i>☺</i>会员</span><span><i>☖</i>代理</span>
+    <span class="on"><i>✦</i>优惠<b>99+</b></span><span><i>▣</i>财务<b>41</b></span><span><i>▥</i>报表</span><span><i>▧</i>风控</span><span><i>⚙</i>系统</span>
+  </div>
+  <span class="tz">⏱ 时区：UTC+08:00</span><span class="user">Tavin</span>
+</div>
+<div class="tabs-open"><span>仪表盘 ⊗</span><span class="on">活动中心 ⊗</span></div>
+<div class="crumb">优惠 / <em>活动中心</em></div>
+
+<div class="note"><b>原型说明：</b>① 操作列新增「详情」（红色「新增」角标），任何状态的活动都可点；② 点击「活动名称」同样打开详情；③ 详情弹窗只读，标题旁可切换「当前版本 / 历史版本」，历史版本中与当前版本不同的配置以橙色显示。示例：206 充值（2 个历史版本）、205 自定义（新建未修改，无历史版本）、204 签到、188 打码（已结束）。</div>
+
+<div class="wrap">
+  <div class="subtabs"><span class="on">活动列表</span><span>已关闭活动</span><span>分类管理</span><span>优惠统计</span></div>
+  <div class="filters">
+    <span class="sel">请选择币种 ⌄</span><span class="sel">全部分类 ⌄</span><span class="sel">全部类型 ⌄</span><span class="sel">活动ID ⌄</span><span class="sel">全部状态 ⌄</span><span class="sel">全部层级 ⌄</span>
+    <span class="btn pri">搜索</span><span class="btn">重置</span><span class="btn pri add">＋ 新增活动</span>
+  </div>
+  <table class="list">
+    <thead><tr><th class="c">☐</th><th>ID</th><th>活动名称</th><th>活动分类</th><th>活动币种</th><th>活动类型</th><th>活动条件</th><th>参与会员</th><th class="c">稽核倍数</th><th>状态</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr><td class="c">☐</td><td>206</td><td><label class="nm" for="m_d206">提现稽核活动</label></td><td>过期时间</td><td>USDT/CNY</td><td>充值</td><td>累计充值</td><td class="members">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试…</td><td class="c">1.00</td><td><span class="tag t-run">进行中</span></td>
+        <td><div class="ops"><label for="m_edit">修改</label><label class="new" for="m_d206">详情</label><a class="warn">关闭活动</a><a class="gray">记录</a><a>复制</a><span></span><a>派发奖励</a></div></td></tr>
+      <tr><td class="c">☐</td><td>205</td><td><label class="nm" for="m_d205">1</label></td><td>Tavian</td><td>USDT/CNY</td><td>自定义</td><td>无条件</td><td class="members">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试…</td><td class="c">1.00</td><td><span class="tag t-wait">待生效</span></td>
+        <td><div class="ops"><label for="m_edit">修改</label><label class="new" for="m_d205">详情</label><a class="warn">关闭活动</a><a class="gray">记录</a><a>复制</a><span></span><a>派发奖励</a></div></td></tr>
+      <tr><td class="c">☐</td><td>204</td><td><label class="nm" for="m_d204">签到 VIP</label></td><td>Tavian</td><td>USDT/CNY</td><td>签到</td><td>签到条件</td><td class="members">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试…</td><td class="c">1.00</td><td><span class="tag t-run">进行中</span></td>
+        <td><div class="ops"><label for="m_edit">修改</label><label class="new" for="m_d204">详情</label><a class="warn">关闭活动</a><a class="gray">记录</a><a>复制</a><span></span><a>派发奖励</a></div></td></tr>
+      <tr><td class="c">☐</td><td>188</td><td><label class="nm" for="m_d188">周末打码送</label></td><td>Tavian</td><td>USDT/CNY</td><td>打码</td><td>累计打码</td><td class="members">全部层级</td><td class="c">2.00</td><td><span class="tag t-end">已结束</span></td>
+        <td><div class="ops"><span class="na">修改</span><label class="new" for="m_d188">详情</label><span></span><a class="gray">记录</a><a>复制</a><span></span><a>派发奖励</a></div></td></tr>
+    </tbody>
+  </table>
+  <div class="foot"><span>☐ 全选当前页</span><span>☐ 全选所有结果</span><span class="btn" style="height:26px;line-height:24px">批量操作 ⌄</span><span>已选择 0 条数据</span><span>共 <b>46</b> 条</span></div>
+</div>
+
+<!-- ================= 206 充值 · 累计充值 ================= -->
+<input type="checkbox" class="mt" id="m_d206">
+<div class="mask" id="d206"><label class="bg" for="m_d206"></label><div class="dlg wg">
+<input type="radio" class="vr" name="v_d206" id="v_d206_0" checked><input type="radio" class="vr" name="v_d206" id="v_d206_1"><input type="radio" class="vr" name="v_d206" id="v_d206_2">
+<div class="dlg-h"><div class="ttl">活动详情</div><div class="vsel" tabindex="0"><span class="cv cv0">当前版本</span><span class="cv cv1">历史版本1</span><span class="cv cv2">历史版本2</span><span class="arr">⌄</span><div class="vmenu"><label for="v_d206_0"><b>当前版本</b></label><label for="v_d206_1"><b>历史版本1</b><em>2026-11-04 16:30:12 · Tavin</em></label><label for="v_d206_2"><b>历史版本2</b><em>2026-11-02 14:20:11 · Tavin</em></label></div></div><label class="x" for="m_d206">×</label></div>
+<div class="dlg-b"><div class="ver ver0"><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">1</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">过期时间</div></div><div class="r"><div class="k">活动类型</div><div class="v">充值活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：提现稽核活动<br>English：Withdraw Audit Event</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-11-03 00:00:00 - 2026-12-31 23:59:59</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-11-02 00:00:00 - 2026-12-31 23:59:59</div></div><div class="r"><div class="k">充值大类</div><div class="v">银行卡、USDT、支付宝、微信</div></div><div class="r"><div class="k">活动条件</div><div class="v">累计充值</div></div><div class="r"><div class="k">循环方式</div><div class="v">日累计循环</div></div><div class="r"><div class="k">是否限时</div><div class="v">否</div></div><div class="r"><div class="k">领取次数</div><div class="v">领取最高一档(只领一次)</div></div><div class="r"><div class="k">派发方式</div><div class="v">玩家自领-过期作废</div></div><div class="r"><div class="k">领取时间</div><div class="v">次日 00:00:00 以后可领取</div></div><div class="r"><div class="k">奖励领取过期天数</div><div class="v">7天</div></div><div class="r"><div class="k">奖金方式</div><div class="v">按固定金额</div></div><div class="r blk"><div class="k">奖励设置</div></div><div class="gwrap"><div class="gcur">USDT</div><table class="gt"><tr><th>累计充值金额</th><th>奖励金额</th></tr><tr><td>100</td><td>5</td></tr><tr><td>500</td><td>30</td></tr><tr><td>2000</td><td>150</td></tr></table><div class="gcur">CNY</div><table class="gt"><tr><th>累计充值金额</th><th>奖励金额</th></tr><tr><td>700</td><td>35</td></tr><tr><td>3500</td><td>210</td></tr><tr><td>14000</td><td>1050</td></tr></table></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">开启</div></div><div class="r"><div class="k">宣传图预览</div><div class="v"><div class="img">宣传图</div></div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">否</div></div><div class="r"><div class="k">活动申领终端</div><div class="v">Android_APP(原生APP、极速APP、马甲包、PWA快捷APP)、iOS_APP(原生APP、极速APP、马甲包、iOS描述签)、PC、Android_H5、iOS_H5</div></div><div class="r"><div class="k">更多申领限制</div><div class="v">手机短信验证、同登录IP只能申领1次、完成首充</div></div><div class="r"><div class="k">参与层级</div><div class="v">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试、tavian、Tavian固定、500层</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">全部</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：每日一次</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r"><div class="k">稽核倍数</div><div class="v">1.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">不限制</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">仅限勾选方式：USDT-TRC20（提限要求倍数 1.00）</div></div><div class="r"><div class="k">规则说明</div><div class="v"><div class="rl"><p>1.活动期间，每日累计充值达标即得对应奖励，充值越多，奖励越多，最高可得150.00</p><p>2.多档达标时，只能领取最高一档的奖励（只领一次）</p><p>3.奖励次日 00:00:00 后可领取，7天内未领取将作废</p><p>4.本活动所赠送的奖金（不含本金）需1.00倍有效投注才能提现，投注不限游戏平台</p></div></div></div></div></div></div><div class="ver ver1"><div class="strip">历史版本1　保存时间 2026-11-04 16:30:12　操作人 Tavin<span><i class="sw"></i>与当前版本不同</span></div><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">1</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">过期时间</div></div><div class="r"><div class="k">活动类型</div><div class="v">充值活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：提现稽核活动<br>English：Withdraw Audit Event</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-11-03 00:00:00 - 2026-12-31 23:59:59</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-11-02 00:00:00 - 2026-12-31 23:59:59</div></div><div class="r"><div class="k">充值大类</div><div class="v">银行卡、USDT、支付宝、微信</div></div><div class="r"><div class="k">活动条件</div><div class="v">累计充值</div></div><div class="r"><div class="k">循环方式</div><div class="v">日累计循环</div></div><div class="r"><div class="k">是否限时</div><div class="v">否</div></div><div class="r"><div class="k">领取次数</div><div class="v">领取最高一档(只领一次)</div></div><div class="r"><div class="k">派发方式</div><div class="v">玩家自领-过期作废</div></div><div class="r"><div class="k">领取时间</div><div class="v">次日 00:00:00 以后可领取</div></div><div class="r"><div class="k">奖励领取过期天数</div><div class="v">7天</div></div><div class="r"><div class="k">奖金方式</div><div class="v">按固定金额</div></div><div class="r blk chg"><div class="k">奖励设置</div></div><div class="gwrap chg"><div class="gcur">USDT</div><table class="gt"><tr><th>累计充值金额</th><th>奖励金额</th></tr><tr><td>100</td><td>5</td></tr><tr><td>500</td><td>30</td></tr><tr><td>2000</td><td>100</td></tr></table><div class="gcur">CNY</div><table class="gt"><tr><th>累计充值金额</th><th>奖励金额</th></tr><tr><td>700</td><td>35</td></tr><tr><td>3500</td><td>210</td></tr><tr><td>14000</td><td>700</td></tr></table></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">开启</div></div><div class="r"><div class="k">宣传图预览</div><div class="v"><div class="img">宣传图</div></div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">否</div></div><div class="r"><div class="k">活动申领终端</div><div class="v">Android_APP(原生APP、极速APP、马甲包、PWA快捷APP)、iOS_APP(原生APP、极速APP、马甲包、iOS描述签)、PC、Android_H5、iOS_H5</div></div><div class="r"><div class="k">更多申领限制</div><div class="v">手机短信验证、同登录IP只能申领1次、完成首充</div></div><div class="r"><div class="k">参与层级</div><div class="v">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试、tavian、Tavian固定、500层</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">全部</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：每日一次</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r chg"><div class="k">稽核倍数</div><div class="v">2.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">不限制</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">仅限勾选方式：USDT-TRC20（提限要求倍数 1.00）</div></div><div class="r chg"><div class="k">规则说明</div><div class="v"><div class="rl"><p>1.活动期间，每日累计充值达标即得对应奖励，充值越多，奖励越多，最高可得100.00</p><p>2.多档达标时，只能领取最高一档的奖励（只领一次）</p><p>3.奖励次日 00:00:00 后可领取，7天内未领取将作废</p><p>4.本活动所赠送的奖金（不含本金）需2.00倍有效投注才能提现，投注不限游戏平台</p></div></div></div></div></div></div><div class="ver ver2"><div class="strip">历史版本2　保存时间 2026-11-02 14:20:11　操作人 Tavin<span><i class="sw"></i>与当前版本不同</span></div><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">1</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">过期时间</div></div><div class="r"><div class="k">活动类型</div><div class="v">充值活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：提现稽核活动<br>English：Withdraw Audit Event</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-11-03 00:00:00 - 2026-12-31 23:59:59</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-11-02 00:00:00 - 2026-12-31 23:59:59</div></div><div class="r chg"><div class="k">充值大类</div><div class="v">银行卡、USDT</div></div><div class="r"><div class="k">活动条件</div><div class="v">累计充值</div></div><div class="r"><div class="k">循环方式</div><div class="v">日累计循环</div></div><div class="r"><div class="k">是否限时</div><div class="v">否</div></div><div class="r"><div class="k">领取次数</div><div class="v">领取最高一档(只领一次)</div></div><div class="r"><div class="k">派发方式</div><div class="v">玩家自领-过期作废</div></div><div class="r"><div class="k">领取时间</div><div class="v">次日 00:00:00 以后可领取</div></div><div class="r chg"><div class="k">奖励领取过期天数</div><div class="v">3天</div></div><div class="r"><div class="k">奖金方式</div><div class="v">按固定金额</div></div><div class="r blk chg"><div class="k">奖励设置</div></div><div class="gwrap chg"><div class="gcur">USDT</div><table class="gt"><tr><th>累计充值金额</th><th>奖励金额</th></tr><tr><td>100</td><td>5</td></tr><tr><td>500</td><td>30</td></tr><tr><td>2000</td><td>100</td></tr></table><div class="gcur">CNY</div><table class="gt"><tr><th>累计充值金额</th><th>奖励金额</th></tr><tr><td>700</td><td>35</td></tr><tr><td>3500</td><td>210</td></tr><tr><td>14000</td><td>700</td></tr></table></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">开启</div></div><div class="r"><div class="k">宣传图预览</div><div class="v"><div class="img">宣传图</div></div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">否</div></div><div class="r chg"><div class="k">活动申领终端</div><div class="v">PC、Android_H5、iOS_H5</div></div><div class="r chg"><div class="k">更多申领限制</div><div class="v">--</div></div><div class="r"><div class="k">参与层级</div><div class="v">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试、tavian、Tavian固定、500层</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">全部</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：每日一次</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r chg"><div class="k">稽核倍数</div><div class="v">2.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">不限制</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">仅限勾选方式：USDT-TRC20（提限要求倍数 1.00）</div></div><div class="r chg"><div class="k">规则说明</div><div class="v"><div class="rl"><p>1.活动期间，每日累计充值达标即得对应奖励，充值越多，奖励越多，最高可得100.00</p><p>2.多档达标时，只能领取最高一档的奖励（只领一次）</p><p>3.奖励次日 00:00:00 后可领取，3天内未领取将作废</p><p>4.本活动所赠送的奖金（不含本金）需2.00倍有效投注才能提现，投注不限游戏平台</p></div></div></div></div></div></div></div>
+</div></div>
+<input type="checkbox" class="mt" id="m_d205">
+<div class="mask" id="d205"><label class="bg" for="m_d205"></label><div class="dlg wg">
+<input type="radio" class="vr" name="v_d205" id="v_d205_0" checked>
+<div class="dlg-h"><div class="ttl">活动详情</div><div class="vsel" tabindex="0"><span class="cv cv0">当前版本</span><span class="arr">⌄</span><div class="vmenu"><label for="v_d205_0"><b>当前版本</b></label></div></div><label class="x" for="m_d205">×</label></div>
+<div class="dlg-b"><div class="ver ver0"><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">2</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">Tavian</div></div><div class="r"><div class="k">活动类型</div><div class="v">自定义活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：1<br>English：--</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-11-10 00:00:00 - 2026-11-30 23:59:59</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-11-08 00:00:00 - 2026-11-30 23:59:59</div></div><div class="r"><div class="k">展示方式</div><div class="v">内置页面</div></div><div class="r"><div class="k">用户主动申请</div><div class="v">开启</div></div><div class="r"><div class="k">循环方式</div><div class="v">日循环</div></div><div class="r"><div class="k">派发方式</div><div class="v">玩家申请-人工派发</div></div><div class="r"><div class="k">申请次数条件</div><div class="v">充值 + 打码：当日充值 ≥ 100 且有效投注 ≥ 500</div></div><div class="r"><div class="k">申请次数上限<i class="tip">?<span>0 表示不限制</span></i></div><div class="v">每日 1 次；周期 0 次；活动期间 0 次</div></div><div class="r"><div class="k">申请未通过时</div><div class="v">退回次数</div></div><div class="r"><div class="k">申请行为验证</div><div class="v">九宫格</div></div><div class="r blk"><div class="k">申请信息</div></div><div class="gwrap"><table class="gt"><tr><th>序号</th><th>问题</th><th>答案类型</th><th>必填</th></tr><tr><td>1</td><td>注单编号</td><td>输入</td><td>是</td></tr><tr><td>2</td><td>游戏平台</td><td>单选</td><td>是</td></tr><tr><td>3</td><td>请上传中奖截图</td><td>上传凭证</td><td>否</td></tr></table></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">开启</div></div><div class="r"><div class="k">宣传图预览</div><div class="v"><div class="img">宣传图</div></div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">是：叠加轮播；左下；仅首页</div></div><div class="r"><div class="k">悬浮图预览</div><div class="v"><div class="img sm">悬浮图</div></div></div><div class="r"><div class="k">活动申领终端</div><div class="v">Android_H5、iOS_H5</div></div><div class="r"><div class="k">更多申领限制</div><div class="v">--</div></div><div class="r"><div class="k">参与层级</div><div class="v">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试、tavian、Tavian固定、500层</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">VIP1 ~ VIP13</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：不弹窗</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r"><div class="k">稽核倍数</div><div class="v">1.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">排除勾选平台：体育-XX体育</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">不限制</div></div><div class="r"><div class="k">活动页面</div><div class="v"><div class="img wide">活动页面内容</div></div></div></div></div></div></div>
+</div></div>
+<input type="checkbox" class="mt" id="m_d204">
+<div class="mask" id="d204"><label class="bg" for="m_d204"></label><div class="dlg wg">
+<input type="radio" class="vr" name="v_d204" id="v_d204_0" checked><input type="radio" class="vr" name="v_d204" id="v_d204_1">
+<div class="dlg-h"><div class="ttl">活动详情</div><div class="vsel" tabindex="0"><span class="cv cv0">当前版本</span><span class="cv cv1">历史版本1</span><span class="arr">⌄</span><div class="vmenu"><label for="v_d204_0"><b>当前版本</b></label><label for="v_d204_1"><b>历史版本1</b><em>2026-11-01 09:12:30 · Tavin</em></label></div></div><label class="x" for="m_d204">×</label></div>
+<div class="dlg-b"><div class="ver ver0"><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">3</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">Tavian</div></div><div class="r"><div class="k">活动类型</div><div class="v">签到活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：签到 VIP<br>English：VIP Check-in</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-11-01 00:00:00 - 永久</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-11-01 00:00:00 - 永久</div></div><div class="r"><div class="k">签到方式<i class="tip">?<span>连续签到：中断后从第 1 天重新开始；累计签到：中断不清零</span></i></div><div class="v">连续签到</div></div><div class="r"><div class="k">签到周期</div><div class="v">7天</div></div><div class="r"><div class="k">循环方式</div><div class="v">周期内循环</div></div><div class="r"><div class="k">派发方式</div><div class="v">系统立即自动派发</div></div><div class="r"><div class="k">奖励方式</div><div class="v">按VIP等级</div></div><div class="r blk"><div class="k">每日奖励</div></div><div class="gwrap"><div class="gcur">VIP1 ~ VIP5 · USDT</div><table class="gt"><tr><th>天数</th><th>充值要求</th><th>打码要求</th><th>奖励类型</th><th>奖励金额</th><th>额外奖励</th></tr><tr><td>第1天</td><td>0</td><td>0</td><td>固定</td><td>1</td><td>--</td></tr><tr><td>第2天</td><td>10</td><td>50</td><td>固定</td><td>2</td><td>--</td></tr><tr><td>第3~6天</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr><tr><td>第7天</td><td>50</td><td>300</td><td>随机</td><td>5 ~ 20</td><td>10</td></tr></table><div class="gcur muted">VIP6 ~ VIP13、CNY 同结构展示，此处省略</div></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">开启</div></div><div class="r"><div class="k">宣传图预览</div><div class="v"><div class="img">宣传图</div></div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">否</div></div><div class="r"><div class="k">活动申领终端</div><div class="v">Android_APP(原生APP、极速APP)、iOS_APP(原生APP、极速APP)、Android_H5、iOS_H5</div></div><div class="r"><div class="k">参与层级</div><div class="v">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试、tavian、Tavian固定、500层</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">VIP1 ~ VIP13</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：每日一次</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r"><div class="k">稽核倍数</div><div class="v">1.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">不限制</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">不限制</div></div><div class="r"><div class="k">规则说明</div><div class="v"><div class="rl"><p>1.每日完成对应充值和打码要求即可签到，连续签到中断后从第1天重新开始</p><p>2.签到奖励系统自动派发到账</p><p>3.奖金需1.00倍有效投注才能提现</p></div></div></div></div></div></div><div class="ver ver1"><div class="strip">历史版本1　保存时间 2026-11-01 09:12:30　操作人 Tavin<span><i class="sw"></i>与当前版本不同</span></div><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">3</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">Tavian</div></div><div class="r"><div class="k">活动类型</div><div class="v">签到活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：签到 VIP<br>English：VIP Check-in</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-11-01 00:00:00 - 永久</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-11-01 00:00:00 - 永久</div></div><div class="r"><div class="k">签到方式<i class="tip">?<span>连续签到：中断后从第 1 天重新开始；累计签到：中断不清零</span></i></div><div class="v">连续签到</div></div><div class="r"><div class="k">签到周期</div><div class="v">7天</div></div><div class="r"><div class="k">循环方式</div><div class="v">周期内循环</div></div><div class="r"><div class="k">派发方式</div><div class="v">系统立即自动派发</div></div><div class="r"><div class="k">奖励方式</div><div class="v">按VIP等级</div></div><div class="r blk chg"><div class="k">每日奖励</div></div><div class="gwrap chg"><div class="gcur">VIP1 ~ VIP5 · USDT</div><table class="gt"><tr><th>天数</th><th>充值要求</th><th>打码要求</th><th>奖励类型</th><th>奖励金额</th><th>额外奖励</th></tr><tr><td>第1天</td><td>0</td><td>0</td><td>固定</td><td>0.5</td><td>--</td></tr><tr><td>第2天</td><td>10</td><td>50</td><td>固定</td><td>2</td><td>--</td></tr><tr><td>第3~6天</td><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr><tr><td>第7天</td><td>50</td><td>300</td><td>随机</td><td>5 ~ 10</td><td>10</td></tr></table><div class="gcur muted">VIP6 ~ VIP13、CNY 同结构展示，此处省略</div></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">开启</div></div><div class="r"><div class="k">宣传图预览</div><div class="v"><div class="img">宣传图</div></div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">否</div></div><div class="r"><div class="k">活动申领终端</div><div class="v">Android_APP(原生APP、极速APP)、iOS_APP(原生APP、极速APP)、Android_H5、iOS_H5</div></div><div class="r"><div class="k">参与层级</div><div class="v">预设层级、刷子玩家、可疑玩家、恶意玩家、xw测试、tavian、Tavian固定、500层</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">VIP1 ~ VIP13</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：每日一次</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r"><div class="k">稽核倍数</div><div class="v">1.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">不限制</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">不限制</div></div><div class="r"><div class="k">规则说明</div><div class="v"><div class="rl"><p>1.每日完成对应充值和打码要求即可签到，连续签到中断后从第1天重新开始</p><p>2.签到奖励系统自动派发到账</p><p>3.奖金需1.00倍有效投注才能提现</p></div></div></div></div></div></div></div>
+</div></div>
+<input type="checkbox" class="mt" id="m_d188">
+<div class="mask" id="d188"><label class="bg" for="m_d188"></label><div class="dlg wg">
+<input type="radio" class="vr" name="v_d188" id="v_d188_0" checked><input type="radio" class="vr" name="v_d188" id="v_d188_1">
+<div class="dlg-h"><div class="ttl">活动详情</div><div class="vsel" tabindex="0"><span class="cv cv0">当前版本</span><span class="cv cv1">历史版本1</span><span class="arr">⌄</span><div class="vmenu"><label for="v_d188_0"><b>当前版本</b></label><label for="v_d188_1"><b>历史版本1</b><em>2026-10-10 11:00:00 · Luis</em></label></div></div><label class="x" for="m_d188">×</label></div>
+<div class="dlg-b"><div class="ver ver0"><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">8</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">Tavian</div></div><div class="r"><div class="k">活动类型</div><div class="v">打码活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：周末打码送<br>English：Weekend Bet Bonus</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-10-11 00:00:00 - 2026-11-01 23:59:59</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-10-10 00:00:00 - 2026-11-01 23:59:59</div></div><div class="r"><div class="k">有效打码平台</div><div class="v">仅限勾选平台：电子-全部、真人-全部</div></div><div class="r"><div class="k">活动条件</div><div class="v">累计打码</div></div><div class="r"><div class="k">循环方式</div><div class="v">周累计循环</div></div><div class="r"><div class="k">是否限时</div><div class="v">是：固定每周 周六、周日</div></div><div class="r"><div class="k">领取次数</div><div class="v">可逐条领取</div></div><div class="r"><div class="k">派发方式</div><div class="v">玩家自领-过期自动派发</div></div><div class="r"><div class="k">领取时间</div><div class="v">下周 00:00:00 以后可领取</div></div><div class="r"><div class="k">奖励领取过期天数</div><div class="v">3天</div></div><div class="r"><div class="k">奖金方式</div><div class="v">按比例金额</div></div><div class="r blk"><div class="k">奖励设置</div></div><div class="gwrap"><div class="gcur">USDT</div><table class="gt"><tr><th>累计有效投注</th><th>奖励比例</th><th>奖励上限</th></tr><tr><td>1000</td><td>0.5%</td><td>20</td></tr><tr><td>10000</td><td>0.8%</td><td>0</td></tr></table><div class="gcur muted">CNY 同结构展示，此处省略</div></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">关闭</div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">否</div></div><div class="r"><div class="k">活动申领终端</div><div class="v">PC、Android_H5、iOS_H5</div></div><div class="r"><div class="k">更多申领限制</div><div class="v">--</div></div><div class="r"><div class="k">参与层级</div><div class="v">全部</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">全部</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：不弹窗</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r"><div class="k">稽核倍数</div><div class="v">2.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">不限制</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">不限制</div></div><div class="r"><div class="k">规则说明</div><div class="v"><div class="rl"><p>1.每周六、周日累计有效投注达标即可获得对应比例奖励</p><p>2.奖励下周 00:00:00 后可领取，3天内未领取将自动派发</p><p>3.奖金需2.00倍有效投注才能提现</p></div></div></div></div></div></div><div class="ver ver1"><div class="strip">历史版本1　保存时间 2026-10-10 11:00:00　操作人 Luis<span><i class="sw"></i>与当前版本不同</span></div><div class="cols"><div class="col"><div class="r"><div class="k">活动排序</div><div class="v">8</div></div><div class="r"><div class="k">币种</div><div class="v">USDT、CNY</div></div><div class="r"><div class="k">活动分类</div><div class="v">Tavian</div></div><div class="r"><div class="k">活动类型</div><div class="v">打码活动</div></div><div class="r"><div class="k">活动名称</div><div class="v">简体中文：周末打码送<br>English：Weekend Bet Bonus</div></div><div class="r"><div class="k">活动时间</div><div class="v">2026-10-11 00:00:00 - 2026-11-01 23:59:59</div></div><div class="r"><div class="k">展示时间</div><div class="v">2026-10-10 00:00:00 - 2026-11-01 23:59:59</div></div><div class="r"><div class="k">有效打码平台</div><div class="v">仅限勾选平台：电子-全部、真人-全部</div></div><div class="r"><div class="k">活动条件</div><div class="v">累计打码</div></div><div class="r"><div class="k">循环方式</div><div class="v">周累计循环</div></div><div class="r"><div class="k">是否限时</div><div class="v">是：固定每周 周六、周日</div></div><div class="r"><div class="k">领取次数</div><div class="v">可逐条领取</div></div><div class="r"><div class="k">派发方式</div><div class="v">玩家自领-过期自动派发</div></div><div class="r"><div class="k">领取时间</div><div class="v">下周 00:00:00 以后可领取</div></div><div class="r"><div class="k">奖励领取过期天数</div><div class="v">3天</div></div><div class="r"><div class="k">奖金方式</div><div class="v">按比例金额</div></div><div class="r blk"><div class="k">奖励设置</div></div><div class="gwrap"><div class="gcur">USDT</div><table class="gt"><tr><th>累计有效投注</th><th>奖励比例</th><th>奖励上限</th></tr><tr><td>1000</td><td>0.5%</td><td>20</td></tr><tr><td>10000</td><td>0.8%</td><td>0</td></tr></table><div class="gcur muted">CNY 同结构展示，此处省略</div></div></div><div class="col"><div class="r"><div class="k">展示宣传图</div><div class="v">关闭</div></div><div class="r"><div class="k">悬浮图(原快捷入口)</div><div class="v">否</div></div><div class="r"><div class="k">活动申领终端</div><div class="v">PC、Android_H5、iOS_H5</div></div><div class="r"><div class="k">更多申领限制</div><div class="v">--</div></div><div class="r"><div class="k">参与层级</div><div class="v">全部</div></div><div class="r"><div class="k">参与VIP等级</div><div class="v">全部</div></div><div class="r"><div class="k">弹窗方式</div><div class="v">登录前：不弹窗；登录后：不弹窗</div></div><div class="r"><div class="k">稽核方式</div><div class="v">稽核奖金</div></div><div class="r chg"><div class="k">稽核倍数</div><div class="v">1.00</div></div><div class="r"><div class="k">奖金稽核指定平台</div><div class="v">不限制</div></div><div class="r"><div class="k">奖金提现方式限制</div><div class="v">不限制</div></div><div class="r chg"><div class="k">规则说明</div><div class="v"><div class="rl"><p>1.每周六、周日累计有效投注达标即可获得对应比例奖励</p><p>2.奖励下周 00:00:00 后可领取，3天内未领取将自动派发</p><p>3.奖金需1.00倍有效投注才能提现</p></div></div></div></div></div></div></div>
+</div></div>
+<input type="checkbox" class="mt" id="m_edit">
+<div class="mask" id="edit"><label class="bg" for="m_edit"></label><div class="dlg">
+  <div class="dlg-h"><h3>修改活动</h3><label class="x" for="m_edit">×</label></div>
+  <div class="edit-ph">修改活动弹窗（现有页面）</div>
+</div></div>
+
+</body>
+</html>
